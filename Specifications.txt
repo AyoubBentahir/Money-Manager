@@ -1,0 +1,103 @@
+
+# Project Specifications: MoneyTracker AI
+
+## 1. Project Overview
+
+**Application Name:** MoneyTracker AI
+**Objective:** A client-side personal finance management tool that empowers users to track, analyze, and manage their finances effectively. The application integrates AI-powered assistance to provide personalized financial advice and insights.
+
+---
+
+## 2. Core Modules & Features
+
+### 2.1. Dashboard
+- **Functionality:** Provides a high-level overview of the user's financial status.
+- **Requirements:**
+    - Display key metrics: Total Balance, Total Income, Total Expenses.
+    - Show a summary of the currently active budget, including a progress bar indicating spending relative to limits.
+    - List the 5 most recent transactions for quick review.
+    - Display a bar chart of the top 5 expense categories.
+    - Feature a budget alert system that notifies users when they have spent 90% or more of the limit for a specific category.
+
+### 2.2. Transactions
+- **Functionality:** Allows for detailed management of all financial transactions.
+- **Requirements:**
+    - A tabular view listing all transactions, sortable by date.
+    - Ability to add a new transaction (income or expense) via a modal form.
+    - Transaction fields: Description, Amount, Type (Income/Expense), Category, Date, and associated Budget (for expenses).
+    - Ability to delete individual transactions.
+
+### 2.3. Recurring Transactions
+- **Functionality:** Automates the entry of regular, scheduled transactions.
+- **Requirements:**
+    - Define recurring transactions with the same details as a standard transaction, plus a frequency.
+    - Supported frequencies: Daily, Weekly, Monthly, Yearly.
+    - The system must automatically check for and add due transactions on app load and when the browser tab becomes active.
+    - Users can view and delete recurring transaction definitions.
+
+### 2.4. Analysis
+- **Functionality:** Offers tools for in-depth analysis of financial data.
+- **Requirements:**
+    - A line chart to visualize income vs. expense trends over a selected period.
+    - Filter controls for the dataset: Start Date, End Date, Transaction Type, and Budget.
+    - Data grouping options for the chart: Day, Month, Year.
+    - A detailed table displaying all transactions that match the current filter criteria.
+
+### 2.5. Budgets
+- **Functionality:** Enables users to create and manage spending budgets.
+- **Requirements:**
+    - Ability to create multiple, named budgets (e.g., "Monthly Expenses," "Vacation").
+    - Ability to select one budget as the "active" budget for dashboard tracking.
+    - For each budget, users can set specific spending limits for any expense category.
+    - Users can rename and delete existing budgets.
+
+### 2.6. Financial Goals
+- **Functionality:** Helps users set and track progress towards financial targets.
+- **Requirements:**
+    - Create goals with a Name, Target Amount, and Target Date.
+    - Track the current amount saved towards each goal.
+    - A feature to add contributions to a goal, updating its progress.
+    - A visual progress bar for each goal.
+    - Users can delete goals.
+
+### 2.7. Financial Advice (AI Chat)
+- **Functionality:** Provides an AI-powered chatbot for financial guidance.
+- **Requirements:**
+    - An interactive chat interface to communicate with an AI assistant named "Fin."
+    - The AI model (Google Gemini) is primed with the user's recent transaction history to provide context-aware responses.
+    - The chat supports streaming responses to simulate a real-time conversation.
+    - The interface should handle loading states and display errors gracefully.
+
+---
+
+## 3. Cross-Cutting Concerns
+
+### 3.1. Data Persistence
+- **Requirement:** All user data must be persisted locally in the user's browser using the `localStorage` API. No data is sent to a remote server for storage.
+
+### 3.2. Data Portability
+- **Requirement:** Users must be able to export their entire application state (transactions, budgets, goals, settings) into a single `.xlsx` file.
+- **Requirement:** Users must be able to import a previously exported `.xlsx` file to restore their application state.
+
+### 3.3. Internationalization (i18n) & Localization (l10n)
+- **Requirement:** The user interface must be available in multiple languages: English, French, Spanish, and Arabic.
+- **Requirement:** The application must support multiple currencies (USD, EUR, JPY, GBP, CAD, AUD, MAD). All monetary values should be displayed in the selected currency format.
+
+---
+
+## 4. Technical Specifications
+
+- **Framework:** React 18 with TypeScript.
+- **Styling:** Tailwind CSS for a utility-first styling approach.
+- **AI Model:** Google Gemini (`gemini-2.0-flash-exp`).
+- **Dependencies:** Managed via ES Modules loaded from a CDN (`esm.sh`). Key libraries include `react`, `@google/genai`, `xlsx`, and `uuid`.
+- **Environment:** Purely client-side. The application runs entirely in the web browser and requires no backend or build process.
+- **Browser Compatibility:** Must be compatible with modern evergreen browsers (Chrome, Firefox, Safari, Edge).
+
+---
+
+## 5. User Interface (UI) / User Experience (UX)
+
+- **Theme:** A modern, dark theme with high-contrast elements for readability.
+- **Layout:** A two-column layout with a fixed sidebar for navigation and a main content area for the selected view.
+- **Interactivity:** Use of modals for data entry to maintain context, visual spinners for loading states, and interactive charts for data exploration.

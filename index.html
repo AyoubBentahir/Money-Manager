@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" id="html-tag">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JarvisAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'primary': '#0D1117',
+              'secondary': '#161B22',
+              'accent': {
+                'DEFAULT': '#38BDF8',
+                'hover': '#7DD3FC',
+              },
+              'glow': 'rgba(56, 189, 248, 0.5)',
+              'light': '#E6EDF3',
+              'medium': '#8B949E',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['Roboto Mono', 'monospace'],
+            },
+            boxShadow: {
+              'glow': '0 0 15px 0 rgba(56, 189, 248, 0.4)',
+            }
+          },
+        },
+      };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-primary text-light" id="body-tag">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

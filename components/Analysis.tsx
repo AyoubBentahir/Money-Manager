@@ -1,0 +1,262 @@
+import React, { useState, useMemo } from 'react';
+import { Transaction, Currency, TransactionType, Budget } from '../types';
+import { formatCurrency, formatDate } from '../utils/formatters';
+import { useTranslations } from '../contexts/TranslationContext';
+
+type GroupByOption = 'day' | 'month' | 'year';
+
+const TrendChart: React.FC<{ 
+    data: { date: string, income: number, expense: number }[], 
+    currency: Currency, 
+    groupBy: GroupByOption,
+    yAxisInterval?: number | null 
+}> = ({ data, currency, groupBy, yAxisInterval }) => {
+    const { t } = useTranslations();
+    const width = 800;
+    const height = 400;
+    const padding = 60; // Increased padding for labels
+
+    const dataMaxAmount = useMemo(() => Math.max(...data.flatMap(d => [d.income, d.expense]), 0), [data]);
+
+    const { chartMaxY, yAxisValues } = useMemo(() => {
+        let maxVal: number;
+        let axisVals: number[];
+
+        if (yAxisInterval && yAxisInterval > 0) {
+            maxVal = Math.ceil(dataMaxAmount / yAxisInterval) * yAxisInterval;
+            if (maxVal === 0) {
+                maxVal = yAxisInterval;
+            }
+            const numTicks = Math.round(maxVal / yAxisInterval);
+            axisVals = Array.from({ length: numTicks + 1 }, (_, i) => maxVal - i * yAxisInterval);
+        } else {
+            // New improved auto-scaling logic
+            const numTicksGoal = 4;
+            if (dataMaxAmount === 0) {
+                maxVal = 100;
+                axisVals = [100, 75, 50, 25, 0];
+            } else {
+                const roughInterval = dataMaxAmount / numTicksGoal;
+                const exponent = Math.pow(10, Math.floor(Math.log10(roughInterval)));
+                const fraction = roughInterval / exponent;
+
+                let niceInterval;
+                if (fraction <= 1) niceInterval = 1 * exponent;
+                else if (fraction <= 2) niceInterval = 2 * exponent;
+                else if (fraction <= 5) niceInterval = 5 * exponent;
+                else niceInterval = 10 * exponent;
+
+                maxVal = Math.ceil(dataMaxAmount / niceInterval) * niceInterval;
+                if (niceInterval > 0) {
+                    const numTicks = Math.ceil(maxVal / niceInterval);
+                    axisVals = Array.from({ length: numTicks + 1 }, (_, i) => maxVal - i * niceInterval);
+                } else { // Fallback for very small numbers
+                     maxVal = dataMaxAmount > 0 ? dataMaxAmount : 1;
+                     axisVals = Array.from({ length: 5 }, (_, i) => maxVal * (1 - i / 4));
+                }
+            }
+        }
+        return { chartMaxY: maxVal, yAxisValues: axisVals.filter(v => v >= 0) };
+    }, [dataMaxAmount, yAxisInterval]);
+
+
+    const effectiveChartMaxY = chartMaxY === 0 ? 1 : chartMaxY;
+    const xScale = (index: number) => padding + (data.length > 1 ? (index / (data.length - 1)) * (width - 2 * padding) : (width - 2 * padding) / 2);
+    const yScale = (amount: number) => height - padding - (amount / effectiveChartMaxY) * (height - 2 * padding);
+    
+    const incomePoints = data.map((d, i) => `${xScale(i)},${yScale(d.income)}`).join(' ');
+    const expensePoints = data.map((d, i) => `${xScale(i)},${yScale(d.expense)}`).join(' ');
+
+    const formatXAxisLabel = (dateKey: string) => {
+        if (groupBy === 'year') return dateKey;
+        if (groupBy === 'month') {
+            const [year, month] = dateKey.split('-');
+            return new Date(parseInt(year), parseInt(month) - 1, 1).toLocaleDateString('en-us', { month: 'short', year: '2-digit' });
+        }
+        return new Date(dateKey + 'T00:00:00').toLocaleDateString('en-us', { month: 'short', day: 'numeric' });
+    };
+
+    return (
+        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+             <h3 className="text-xl font-semibold mb-4 text-light">{t('transaction_trends')}</h3>
+            <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
+                 {/* Y-Axis lines and labels */}
+                {yAxisValues.map((value, i) => (
+                    <g key={i}>
+                        <line x1={padding} y1={yScale(value)} x2={width - padding} y2={yScale(value)} stroke="#30363d" />
+                        <text x={padding - 10} y={yScale(value) + 4} fill="#8B949E" textAnchor="end" fontSize="12">{formatCurrency(value, currency)}</text>
+                    </g>
+                ))}
+                
+                {data.length > 1 && <>
+                    <polyline points={incomePoints} fill="none" stroke="#22c55e" strokeWidth="2" />
+                    <polyline points={expensePoints} fill="none" stroke="#ef4444" strokeWidth="2" />
+                </>
+                }
+                {data.map((d, i) => (
+                    <g key={d.date}>
+                        <circle cx={xScale(i)} cy={yScale(d.income)} r="4" fill="#22c55e" />
+                        <circle cx={xScale(i)} cy={yScale(d.expense)} r="4" fill="#ef4444" />
+                         <text x={xScale(i)} y={height - padding + 25} fill="#8B949E" textAnchor="middle" fontSize="12">{formatXAxisLabel(d.date)}</text>
+                    </g>
+                ))}
+            </svg>
+            <div className="flex justify-center gap-6 mt-4">
+                <div className="flex items-center"><div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>{t('income')}</div>
+                <div className="flex items-center"><div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>{t('expense')}</div>
+            </div>
+        </div>
+    );
+};
+
+
+export const Analysis: React.FC<{ transactions: Transaction[], currency: Currency, budgets: Budget[] }> = ({ transactions, currency, budgets }) => {
+    const { t } = useTranslations();
+    const today = new Date().toISOString().split('T')[0];
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    const [filters, setFilters] = useState({
+        startDate: thirtyDaysAgo,
+        endDate: today,
+        type: 'all' as TransactionType | 'all',
+        budgetId: 'all',
+        groupBy: 'day' as GroupByOption,
+        yAxisInterval: '',
+    });
+
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    };
+
+    const filteredTransactions = useMemo(() => {
+        return transactions.filter(t => {
+            const date = new Date(t.date);
+            const start = new Date(filters.startDate);
+            const end = new Date(filters.endDate);
+            const typeMatch = filters.type === 'all' || t.type === filters.type;
+            const budgetMatch = filters.budgetId === 'all' || t.budgetId === filters.budgetId;
+
+            return date >= start && date <= end && typeMatch && budgetMatch;
+        });
+    }, [transactions, filters]);
+
+    const chartData = useMemo(() => {
+        const getGroupKey = (dateStr: string): string => {
+            const date = new Date(dateStr + 'T00:00:00'); // Use T00:00:00 to treat as local
+            if (filters.groupBy === 'month') {
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            }
+            if (filters.groupBy === 'year') {
+                return `${date.getFullYear()}`;
+            }
+            return dateStr;
+        };
+
+        const grouped = filteredTransactions.reduce((acc, t) => {
+            const key = getGroupKey(t.date);
+            if (!acc[key]) acc[key] = { date: key, income: 0, expense: 0 };
+            if (t.type === 'income') acc[key].income += t.amount;
+            else acc[key].expense += t.amount;
+            return acc;
+        }, {} as Record<string, { date: string, income: number, expense: number }>);
+        
+        // FIX: Explicitly type 'a' and 'b' to resolve 'unknown' type errors from Object.values().
+        return Object.values(grouped).sort((a: { date: string }, b: { date: string }) => {
+             if (filters.groupBy === 'year') return a.date.localeCompare(b.date);
+             if (filters.groupBy === 'month') return a.date.localeCompare(b.date);
+             return new Date(a.date).getTime() - new Date(b.date).getTime();
+        });
+    }, [filteredTransactions, filters.groupBy]);
+
+  const yInterval = filters.yAxisInterval ? parseFloat(filters.yAxisInterval) : null;
+
+  return (
+    <div className="p-6 bg-primary min-h-full">
+        <h1 className="text-4xl font-bold mb-8 text-light">{t('analysis')}</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-1 bg-secondary p-6 rounded-lg border border-gray-800 self-start space-y-4">
+                <h3 className="text-xl font-semibold text-light">{t('filters')}</h3>
+                <div>
+                    <label htmlFor="startDate" className="block text-medium text-sm font-bold mb-2">{t('start_date')}</label>
+                    <input id="startDate" name="startDate" type="date" value={filters.startDate} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" />
+                </div>
+                <div>
+                    <label htmlFor="endDate" className="block text-medium text-sm font-bold mb-2">{t('end_date')}</label>
+                    <input id="endDate" name="endDate" type="date" value={filters.endDate} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" />
+                </div>
+                <div>
+                    <label htmlFor="type" className="block text-medium text-sm font-bold mb-2">{t('type')}</label>
+                    <select id="type" name="type" value={filters.type} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                        <option value="all">{t('all')}</option>
+                        <option value="income">{t('income')}</option>
+                        <option value="expense">{t('expense')}</option>
+                    </select>
+                </div>
+                 <div>
+                    <label htmlFor="budgetId" className="block text-medium text-sm font-bold mb-2">{t('budget')}</label>
+                    <select id="budgetId" name="budgetId" value={filters.budgetId} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                        <option value="all">{t('all_budgets')}</option>
+                        {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="groupBy" className="block text-medium text-sm font-bold mb-2">{t('group_by')}</label>
+                    <select id="groupBy" name="groupBy" value={filters.groupBy} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                        <option value="day">{t('day')}</option>
+                        <option value="month">{t('month')}</option>
+                        <option value="year">{t('year')}</option>
+                    </select>
+                </div>
+                <div>
+                    <label htmlFor="yAxisInterval" className="block text-medium text-sm font-bold mb-2">{t('y_axis_interval')}</label>
+                    <input
+                        id="yAxisInterval"
+                        name="yAxisInterval"
+                        type="number"
+                        min="1"
+                        placeholder={t('auto')}
+                        value={filters.yAxisInterval}
+                        onChange={handleFilterChange}
+                        className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                </div>
+            </div>
+
+            <div className="lg:col-span-3">
+                 <TrendChart data={chartData} currency={currency} groupBy={filters.groupBy} yAxisInterval={yInterval}/>
+            </div>
+        </div>
+
+        <div className="mt-6 bg-secondary shadow-lg rounded-lg border border-gray-800 overflow-hidden">
+             <h3 className="text-xl font-semibold p-6 text-light">{t('filtered_transactions')} ({filteredTransactions.length})</h3>
+             <div className="overflow-x-auto">
+                <table className="min-w-full">
+                <thead className="bg-primary">
+                    <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('date')}</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('description')}</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('category')}</th>
+                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-medium uppercase tracking-wider">{t('amount')}</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-800">
+                    {filteredTransactions.map((t) => (
+                    <tr key={t.id} className="hover:bg-primary">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{formatDate(t.date)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light">{t.description}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{t.category}</td>
+                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold font-mono ${t.type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
+                        {formatCurrency(t.amount, currency)}
+                        </td>
+                    </tr>
+                    ))}
+                </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+  );
+};
+
+export default Analysis;
