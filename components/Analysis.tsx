@@ -5,12 +5,13 @@ import { useTranslations } from '../contexts/TranslationContext';
 
 type GroupByOption = 'day' | 'month' | 'year';
 
-const TrendChart: React.FC<{ 
-    data: { date: string, income: number, expense: number }[], 
-    currency: Currency, 
+const TrendChart: React.FC<{
+    data: { date: string, income: number, expense: number }[],
+    currency: Currency,
     groupBy: GroupByOption,
-    yAxisInterval?: number | null 
-}> = ({ data, currency, groupBy, yAxisInterval }) => {
+    yAxisInterval?: number | null,
+    onYAxisIntervalChange?: (newInterval: number) => void
+}> = ({ data, currency, groupBy, yAxisInterval, onYAxisIntervalChange }) => {
     const { t } = useTranslations();
     const width = 800;
     const height = 400;
@@ -51,8 +52,8 @@ const TrendChart: React.FC<{
                     const numTicks = Math.ceil(maxVal / niceInterval);
                     axisVals = Array.from({ length: numTicks + 1 }, (_, i) => maxVal - i * niceInterval);
                 } else { // Fallback for very small numbers
-                     maxVal = dataMaxAmount > 0 ? dataMaxAmount : 1;
-                     axisVals = Array.from({ length: 5 }, (_, i) => maxVal * (1 - i / 4));
+                    maxVal = dataMaxAmount > 0 ? dataMaxAmount : 1;
+                    axisVals = Array.from({ length: 5 }, (_, i) => maxVal * (1 - i / 4));
                 }
             }
         }
@@ -63,7 +64,7 @@ const TrendChart: React.FC<{
     const effectiveChartMaxY = chartMaxY === 0 ? 1 : chartMaxY;
     const xScale = (index: number) => padding + (data.length > 1 ? (index / (data.length - 1)) * (width - 2 * padding) : (width - 2 * padding) / 2);
     const yScale = (amount: number) => height - padding - (amount / effectiveChartMaxY) * (height - 2 * padding);
-    
+
     const incomePoints = data.map((d, i) => `${xScale(i)},${yScale(d.income)}`).join(' ');
     const expensePoints = data.map((d, i) => `${xScale(i)},${yScale(d.expense)}`).join(' ');
 
@@ -76,18 +77,45 @@ const TrendChart: React.FC<{
         return new Date(dateKey + 'T00:00:00').toLocaleDateString('en-us', { month: 'short', day: 'numeric' });
     };
 
+    const handleWheel = (e: React.WheelEvent) => {
+        if (!onYAxisIntervalChange) return;
+        e.preventDefault();
+
+        let currentInterval = yAxisInterval;
+        if (!currentInterval || currentInterval <= 0) {
+            // Estimate a good starting interval if it's auto
+            if (chartMaxY > 0 && yAxisValues.length > 1) {
+                currentInterval = yAxisValues[0] - yAxisValues[1];
+            } else {
+                currentInterval = 100;
+            }
+        }
+
+        const step = Math.max(1, Math.floor(currentInterval * 0.2)); // 20% step
+
+        if (e.deltaY < 0) {
+            // Zoom out (increase interval)
+            onYAxisIntervalChange(currentInterval + step);
+        } else {
+            // Zoom in (decrease interval)
+            const newInterval = currentInterval - step;
+            onYAxisIntervalChange(Math.max(1, newInterval)); // Prevent <= 0
+        }
+    };
+
     return (
-        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
-             <h3 className="text-xl font-semibold mb-4 text-light">{t('transaction_trends')}</h3>
+        <div className="p-6 bg-secondary rounded-lg border border-gray-800" onWheel={handleWheel}>
+            <h3 className="text-xl font-semibold mb-4 text-light">{t('transaction_trends')}</h3>
+            {onYAxisIntervalChange && <p className="text-xs text-medium italic mb-2">Scroll on the chart to adjust the Y-axis scale</p>}
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
-                 {/* Y-Axis lines and labels */}
+                {/* Y-Axis lines and labels */}
                 {yAxisValues.map((value, i) => (
                     <g key={i}>
                         <line x1={padding} y1={yScale(value)} x2={width - padding} y2={yScale(value)} stroke="#30363d" />
                         <text x={padding - 10} y={yScale(value) + 4} fill="#8B949E" textAnchor="end" fontSize="12">{formatCurrency(value, currency)}</text>
                     </g>
                 ))}
-                
+
                 {data.length > 1 && <>
                     <polyline points={incomePoints} fill="none" stroke="#22c55e" strokeWidth="2" />
                     <polyline points={expensePoints} fill="none" stroke="#ef4444" strokeWidth="2" />
@@ -97,7 +125,7 @@ const TrendChart: React.FC<{
                     <g key={d.date}>
                         <circle cx={xScale(i)} cy={yScale(d.income)} r="4" fill="#22c55e" />
                         <circle cx={xScale(i)} cy={yScale(d.expense)} r="4" fill="#ef4444" />
-                         <text x={xScale(i)} y={height - padding + 25} fill="#8B949E" textAnchor="middle" fontSize="12">{formatXAxisLabel(d.date)}</text>
+                        <text x={xScale(i)} y={height - padding + 25} fill="#8B949E" textAnchor="middle" fontSize="12">{formatXAxisLabel(d.date)}</text>
                     </g>
                 ))}
             </svg>
@@ -159,104 +187,126 @@ export const Analysis: React.FC<{ transactions: Transaction[], currency: Currenc
             else acc[key].expense += t.amount;
             return acc;
         }, {} as Record<string, { date: string, income: number, expense: number }>);
-        
+
+        // Fill in missing days if grouping by day
+        if (filters.groupBy === 'day') {
+            const start = new Date(filters.startDate + 'T00:00:00');
+            const end = new Date(filters.endDate + 'T00:00:00');
+
+            // Prevent infinite loops on bad dates
+            if (start <= end) {
+                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                    const dateStr = d.toISOString().split('T')[0];
+                    if (!grouped[dateStr]) {
+                        grouped[dateStr] = { date: dateStr, income: 0, expense: 0 };
+                    }
+                }
+            }
+        }
+
         // FIX: Explicitly type 'a' and 'b' to resolve 'unknown' type errors from Object.values().
         return Object.values(grouped).sort((a: { date: string }, b: { date: string }) => {
-             if (filters.groupBy === 'year') return a.date.localeCompare(b.date);
-             if (filters.groupBy === 'month') return a.date.localeCompare(b.date);
-             return new Date(a.date).getTime() - new Date(b.date).getTime();
+            if (filters.groupBy === 'year') return a.date.localeCompare(b.date);
+            if (filters.groupBy === 'month') return a.date.localeCompare(b.date);
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
         });
     }, [filteredTransactions, filters.groupBy]);
 
-  const yInterval = filters.yAxisInterval ? parseFloat(filters.yAxisInterval) : null;
+    const yInterval = filters.yAxisInterval ? parseFloat(filters.yAxisInterval) : null;
 
-  return (
-    <div className="p-6 bg-primary min-h-full">
-        <h1 className="text-4xl font-bold mb-8 text-light">{t('analysis')}</h1>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-1 bg-secondary p-6 rounded-lg border border-gray-800 self-start space-y-4">
-                <h3 className="text-xl font-semibold text-light">{t('filters')}</h3>
-                <div>
-                    <label htmlFor="startDate" className="block text-medium text-sm font-bold mb-2">{t('start_date')}</label>
-                    <input id="startDate" name="startDate" type="date" value={filters.startDate} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" />
+    return (
+        <div className="p-6 bg-primary min-h-full">
+            <h1 className="text-4xl font-bold mb-8 text-light">{t('analysis')}</h1>
+
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-1 bg-secondary p-6 rounded-lg border border-gray-800 self-start space-y-4">
+                    <h3 className="text-xl font-semibold text-light">{t('filters')}</h3>
+                    <div>
+                        <label htmlFor="startDate" className="block text-medium text-sm font-bold mb-2">{t('start_date')}</label>
+                        <input id="startDate" name="startDate" type="date" value={filters.startDate} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" />
+                    </div>
+                    <div>
+                        <label htmlFor="endDate" className="block text-medium text-sm font-bold mb-2">{t('end_date')}</label>
+                        <input id="endDate" name="endDate" type="date" value={filters.endDate} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" />
+                    </div>
+                    <div>
+                        <label htmlFor="type" className="block text-medium text-sm font-bold mb-2">{t('type')}</label>
+                        <select id="type" name="type" value={filters.type} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                            <option value="all">{t('all')}</option>
+                            <option value="income">{t('income')}</option>
+                            <option value="expense">{t('expense')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="budgetId" className="block text-medium text-sm font-bold mb-2">{t('budget')}</label>
+                        <select id="budgetId" name="budgetId" value={filters.budgetId} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                            <option value="all">{t('all_budgets')}</option>
+                            {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="groupBy" className="block text-medium text-sm font-bold mb-2">{t('group_by')}</label>
+                        <select id="groupBy" name="groupBy" value={filters.groupBy} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                            <option value="day">{t('day')}</option>
+                            <option value="month">{t('month')}</option>
+                            <option value="year">{t('year')}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="yAxisInterval" className="block text-medium text-sm font-bold mb-2">{t('y_axis_interval')}</label>
+                        <input
+                            id="yAxisInterval"
+                            name="yAxisInterval"
+                            type="number"
+                            min="1"
+                            placeholder={t('auto')}
+                            value={filters.yAxisInterval}
+                            onChange={handleFilterChange}
+                            className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+                        />
+                    </div>
                 </div>
-                <div>
-                    <label htmlFor="endDate" className="block text-medium text-sm font-bold mb-2">{t('end_date')}</label>
-                    <input id="endDate" name="endDate" type="date" value={filters.endDate} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" />
-                </div>
-                <div>
-                    <label htmlFor="type" className="block text-medium text-sm font-bold mb-2">{t('type')}</label>
-                    <select id="type" name="type" value={filters.type} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
-                        <option value="all">{t('all')}</option>
-                        <option value="income">{t('income')}</option>
-                        <option value="expense">{t('expense')}</option>
-                    </select>
-                </div>
-                 <div>
-                    <label htmlFor="budgetId" className="block text-medium text-sm font-bold mb-2">{t('budget')}</label>
-                    <select id="budgetId" name="budgetId" value={filters.budgetId} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
-                        <option value="all">{t('all_budgets')}</option>
-                        {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="groupBy" className="block text-medium text-sm font-bold mb-2">{t('group_by')}</label>
-                    <select id="groupBy" name="groupBy" value={filters.groupBy} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
-                        <option value="day">{t('day')}</option>
-                        <option value="month">{t('month')}</option>
-                        <option value="year">{t('year')}</option>
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="yAxisInterval" className="block text-medium text-sm font-bold mb-2">{t('y_axis_interval')}</label>
-                    <input
-                        id="yAxisInterval"
-                        name="yAxisInterval"
-                        type="number"
-                        min="1"
-                        placeholder={t('auto')}
-                        value={filters.yAxisInterval}
-                        onChange={handleFilterChange}
-                        className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+
+                <div className="lg:col-span-3">
+                    <TrendChart
+                        data={chartData}
+                        currency={currency}
+                        groupBy={filters.groupBy}
+                        yAxisInterval={yInterval}
+                        onYAxisIntervalChange={(val) => setFilters(prev => ({ ...prev, yAxisInterval: val.toString() }))}
                     />
                 </div>
             </div>
 
-            <div className="lg:col-span-3">
-                 <TrendChart data={chartData} currency={currency} groupBy={filters.groupBy} yAxisInterval={yInterval}/>
+            <div className="mt-6 bg-secondary shadow-lg rounded-lg border border-gray-800 overflow-hidden">
+                <h3 className="text-xl font-semibold p-6 text-light">{t('filtered_transactions')} ({filteredTransactions.length})</h3>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                        <thead className="bg-primary">
+                            <tr>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('date')}</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('description')}</th>
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('category')}</th>
+                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-medium uppercase tracking-wider">{t('amount')}</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-800">
+                            {filteredTransactions.map((t) => (
+                                <tr key={t.id} className="hover:bg-primary">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{formatDate(t.date)}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light">{t.description}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{t.category}</td>
+                                    <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold font-mono ${t.type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
+                                        {formatCurrency(t.amount, currency)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-
-        <div className="mt-6 bg-secondary shadow-lg rounded-lg border border-gray-800 overflow-hidden">
-             <h3 className="text-xl font-semibold p-6 text-light">{t('filtered_transactions')} ({filteredTransactions.length})</h3>
-             <div className="overflow-x-auto">
-                <table className="min-w-full">
-                <thead className="bg-primary">
-                    <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('date')}</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('description')}</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('category')}</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-medium uppercase tracking-wider">{t('amount')}</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                    {filteredTransactions.map((t) => (
-                    <tr key={t.id} className="hover:bg-primary">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{formatDate(t.date)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light">{t.description}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{t.category}</td>
-                        <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold font-mono ${t.type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
-                        {formatCurrency(t.amount, currency)}
-                        </td>
-                    </tr>
-                    ))}
-                </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-  );
+    );
 };
 
 export default Analysis;
