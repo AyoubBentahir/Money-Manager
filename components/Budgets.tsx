@@ -64,9 +64,15 @@ const BudgetManager: React.FC<{
                         <input
                             id={`limit-${category}`}
                             type="number"
+                            min="0"
                             placeholder={t('no_limit')}
                             value={limits[category] || ''}
                             onChange={e => handleLimitChange(category, e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === '-' || e.key === 'e') {
+                                    e.preventDefault();
+                                }
+                            }}
                             className="w-full bg-secondary p-2 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-accent font-mono"
                         />
                     </div>
@@ -166,6 +172,11 @@ export const Budgets: React.FC<{
                                     step="0.01"
                                     value={newBudgetAmount}
                                     onChange={e => setNewBudgetAmount(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === '-' || e.key === 'e') {
+                                            e.preventDefault();
+                                        }
+                                    }}
                                     placeholder={t('initial_budget_amount')}
                                     className="flex-grow bg-primary p-3 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent font-mono"
                                 />
