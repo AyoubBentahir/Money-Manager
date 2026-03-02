@@ -5,10 +5,7 @@ let ai: GoogleGenerativeAI | null = null;
 
 // This function safely retrieves the API key
 const getApiKey = (): string => {
-    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-        return process.env.API_KEY;
-    }
-    return ''; 
+  return import.meta.env.VITE_GEMINI_API_KEY || '';
 }
 
 const getAiClient = (): GoogleGenerativeAI => {
@@ -29,8 +26,8 @@ export const startChatSession = (transactions: Transaction[]) => {
     ? `Here is a summary of recent transactions: ${JSON.stringify(transactions.slice(0, 20))}`
     : "The user has not added any transactions yet.";
 
-  const model = client.getGenerativeModel({ 
-    model: "gemini-2.0-flash-exp",
+  const model = client.getGenerativeModel({
+    model: "gemini-2.5-flash",
     systemInstruction: `You are 'Fin', a friendly, encouraging, and highly knowledgeable financial assistant for the JarvisAI app. Your goal is to provide actionable, easy-to-understand financial advice. You can analyze spending, identify trends, answer questions about budgeting, and suggest ways to save or invest. Always be positive and helpful. Base your initial analysis on this data: ${transactionSummary}.`
   });
 
