@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import Transactions from './components/Transactions';
@@ -13,9 +13,12 @@ import { LoadingSpinner } from './components/icons';
 import { translations } from './utils/translations';
 import { excelService } from './services/dbService';
 import TranslationContext from './contexts/TranslationContext';
+import { ToastProvider, useToast } from './contexts/ToastContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 
-const App: React.FC = () => {
+const AppInner: React.FC = () => {
+  const { showToast } = useToast();
   const [language, setLanguage] = useState<Language>(() => {
     const storedLang = localStorage.getItem('jarvisai_language');
     return (storedLang as Language) || 'en';
@@ -47,14 +50,14 @@ const App: React.FC = () => {
 
   const [currentView, setCurrentView] = useState<View>(View.Dashboard);
   const [isDataLoading, setIsDataLoading] = useState(false);
-  const [dataError, setDataError] = useState<string | null>(null);
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
     localStorage.setItem('jarvisai_language', lang);
-  }
+  };
 
   useEffect(() => {
     const htmlTag = document.getElementById('html-tag');
@@ -66,70 +69,67 @@ const App: React.FC = () => {
   // Process recurring transactions on initial load and when app becomes visible
   useEffect(() => {
     checkAndProcessRecurring();
-
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        checkAndProcessRecurring();
-      }
+      if (document.visibilityState === 'visible') checkAndProcessRecurring();
     };
-
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [checkAndProcessRecurring]);
 
-  const t = (key: string, placeholders?: Record<string, any>): string => {
-    return translations[language][key](placeholders);
-  };
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement).tagName;
+      const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+      if (isTyping) return;
 
-  const handleImport = () => {
-    fileInputRef.current?.click();
-  };
+      if (e.key === 'n' || e.key === 'N') {
+        if (currentView === View.Transactions) {
+          setIsTransactionModalOpen(true);
+        }
+      }
+      if (e.key === 'Escape') {
+        setIsTransactionModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentView]);
+
+  const t = useCallback((key: string, placeholders?: Record<string, any>): string => {
+    return translations[language][key](placeholders);
+  }, [language]);
+
+  const handleImport = () => fileInputRef.current?.click();
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       setIsDataLoading(true);
-      setDataError(null);
       try {
         const importedState = await excelService.importStateFromExcel(file);
         setAppState(importedState);
-        // Optional: reload to ensure clean state propagation, though React state updates should handle it.
-        // window.location.reload(); 
+        showToast('Data imported successfully!', 'success');
       } catch (error) {
-        console.error(error);
-        setDataError(error instanceof Error ? error.message : t('restore_failed'));
-        setTimeout(() => setDataError(null), 5000);
+        showToast(error instanceof Error ? error.message : t('restore_failed'), 'error');
       } finally {
         setIsDataLoading(false);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
+        if (fileInputRef.current) fileInputRef.current.value = '';
       }
     }
   };
 
   const handleExport = async () => {
     setIsDataLoading(true);
-    setDataError(null);
     try {
       const fullState = {
-        transactions,
-        budgets,
-        recurringTransactions,
-        goals,
-        settings: {
-          activeBudgetId,
-          currency,
-          language
-        }
+        transactions, budgets, recurringTransactions, goals,
+        settings: { activeBudgetId, currency, language }
       };
       await excelService.exportStateToExcel(fullState);
+      showToast('Data exported successfully!', 'success');
     } catch (error) {
-      setDataError(error instanceof Error ? error.message : t('backup_failed'));
-      setTimeout(() => setDataError(null), 5000);
+      showToast(error instanceof Error ? error.message : t('backup_failed'), 'error');
     } finally {
       setIsDataLoading(false);
     }
@@ -137,12 +137,11 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     const activeBudget = budgets.find(b => b.id === activeBudgetId);
-
     switch (currentView) {
       case View.Dashboard:
         return <Dashboard transactions={transactions} activeBudget={activeBudget} currency={currency} budgets={budgets} setActiveBudgetId={setActiveBudgetId} />;
       case View.Transactions:
-        return <Transactions transactions={transactions} addTransaction={addTransaction} deleteTransaction={deleteTransaction} currency={currency} budgets={budgets} activeBudgetId={activeBudgetId} />;
+        return <Transactions transactions={transactions} addTransaction={addTransaction} deleteTransaction={deleteTransaction} currency={currency} budgets={budgets} activeBudgetId={activeBudgetId} externalModalOpen={isTransactionModalOpen} onExternalModalClose={() => setIsTransactionModalOpen(false)} />;
       case View.Analysis:
         return <Analysis transactions={transactions} currency={currency} budgets={budgets} />;
       case View.Budgets:
@@ -167,11 +166,6 @@ const App: React.FC = () => {
             <p className="mt-4 text-lg">{t('processing_data')}</p>
           </div>
         )}
-        {dataError && (
-          <div className="fixed bottom-5 right-5 bg-red-500 text-white py-2 px-4 rounded-lg shadow-lg z-50">
-            {dataError}
-          </div>
-        )}
         <Sidebar
           currentView={currentView}
           onViewChange={setCurrentView}
@@ -188,5 +182,13 @@ const App: React.FC = () => {
     </TranslationContext.Provider>
   );
 };
+
+const App: React.FC = () => (
+  <ThemeProvider>
+    <ToastProvider>
+      <AppInner />
+    </ToastProvider>
+  </ThemeProvider>
+);
 
 export default App;

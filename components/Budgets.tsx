@@ -3,6 +3,7 @@ import { Budget, Transaction, Currency, ExpenseCategory, ExpenseCategoryType, Sp
 import { formatCurrency } from '../utils/formatters';
 import { TrashIcon } from './icons';
 import { useTranslations } from '../contexts/TranslationContext';
+import { useToast } from '../contexts/ToastContext';
 
 const BudgetManager: React.FC<{
     activeBudget: Budget;
@@ -93,6 +94,7 @@ export const Budgets: React.FC<{
     currency: Currency;
 }> = ({ budgets, transactions, activeBudgetId, setActiveBudgetId, addBudget, deleteBudget, updateBudget, currency }) => {
     const { t } = useTranslations();
+    const { confirm, showToast } = useToast();
     const [newBudgetName, setNewBudgetName] = useState('');
     const [newBudgetAmount, setNewBudgetAmount] = useState('');
     const [editingName, setEditingName] = useState('');
@@ -109,14 +111,16 @@ export const Budgets: React.FC<{
         const amount = parseFloat(newBudgetAmount);
         if (newBudgetName.trim() && !isNaN(amount) && amount > 0) {
             addBudget(newBudgetName.trim(), amount);
+            showToast(`Budget "${newBudgetName.trim()}" created!`, 'success');
             setNewBudgetName('');
             setNewBudgetAmount('');
         }
     };
 
-    const handleDeleteBudget = () => {
-        if (activeBudgetId && window.confirm(t('delete_budget_confirmation'))) {
-            deleteBudget(activeBudgetId);
+    const handleDeleteBudget = async () => {
+        if (activeBudgetId) {
+            const ok = await confirm(t('delete_budget_confirmation'));
+            if (ok) { deleteBudget(activeBudgetId); showToast('Budget deleted.', 'warning'); }
         }
     }
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { RecurringTransaction, TransactionType, ExpenseCategory, IncomeCategory, Currency, Budget, Frequency } from '../types';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { TrashIcon } from './icons';
@@ -23,7 +23,7 @@ const AddRecurringModal: React.FC<AddRecurringModalProps> = ({ onClose, onAdd, b
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (description && amount) {
-       const newRecTransaction: Omit<RecurringTransaction, 'id' | 'nextDueDate'> = {
+      const newRecTransaction: Omit<RecurringTransaction, 'id' | 'nextDueDate'> = {
         description,
         amount: parseFloat(amount),
         startDate,
@@ -62,40 +62,40 @@ const AddRecurringModal: React.FC<AddRecurringModalProps> = ({ onClose, onAdd, b
             <label htmlFor="description" className="block text-medium text-sm font-bold mb-2">{t('description')}</label>
             <input id="description" type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
           </div>
-           <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label htmlFor="amount" className="block text-medium text-sm font-bold mb-2">{t('amount')}</label>
-                    <input id="amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
-                </div>
-                 <div>
-                    <label htmlFor="frequency" className="block text-medium text-sm font-bold mb-2">{t('frequency')}</label>
-                    <select id="frequency" value={frequency} onChange={e => setFrequency(e.target.value as Frequency)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
-                        <option value="daily">{t('daily')}</option>
-                        <option value="weekly">{t('weekly')}</option>
-                        <option value="monthly">{t('monthly')}</option>
-                        <option value="yearly">{t('yearly')}</option>
-                    </select>
-                </div>
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label htmlFor="amount" className="block text-medium text-sm font-bold mb-2">{t('amount')}</label>
+              <input id="amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
             </div>
+            <div>
+              <label htmlFor="frequency" className="block text-medium text-sm font-bold mb-2">{t('frequency')}</label>
+              <select id="frequency" value={frequency} onChange={e => setFrequency(e.target.value as Frequency)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                <option value="daily">{t('daily')}</option>
+                <option value="weekly">{t('weekly')}</option>
+                <option value="monthly">{t('monthly')}</option>
+                <option value="yearly">{t('yearly')}</option>
+              </select>
+            </div>
+          </div>
           {type === 'expense' && budgets.length > 0 && (
-             <div className="mb-4">
-                <label htmlFor="budget" className="block text-medium text-sm font-bold mb-2">{t('budget')}</label>
-                <select id="budget" value={budgetId} onChange={e => setBudgetId(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
-                    {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
+            <div className="mb-4">
+              <label htmlFor="budget" className="block text-medium text-sm font-bold mb-2">{t('budget')}</label>
+              <select id="budget" value={budgetId} onChange={e => setBudgetId(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
             </div>
           )}
-           <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label htmlFor="category" className="block text-medium text-sm font-bold mb-2">{t('category')}</label>
-                    <select id="category" value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
-                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="startDate" className="block text-medium text-sm font-bold mb-2">{t('start_date_label')}</label>
-                    <input id="startDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
-                </div>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <label htmlFor="category" className="block text-medium text-sm font-bold mb-2">{t('category')}</label>
+              <select id="category" value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="startDate" className="block text-medium text-sm font-bold mb-2">{t('start_date_label')}</label>
+              <input id="startDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+            </div>
           </div>
           <div className="flex justify-end gap-4">
             <button type="button" onClick={onClose} className="bg-gray-700 hover:bg-gray-600 text-light font-bold py-2 px-4 rounded-md">{t('cancel')}</button>
@@ -109,15 +109,14 @@ const AddRecurringModal: React.FC<AddRecurringModalProps> = ({ onClose, onAdd, b
 
 
 export const Recurring: React.FC<{
-    recurringTransactions: RecurringTransaction[],
-    addRecurringTransaction: (transaction: Omit<RecurringTransaction, 'id' | 'nextDueDate'>) => void,
-    deleteRecurringTransaction: (id: string) => void,
-    currency: Currency,
-    budgets: Budget[],
+  recurringTransactions: RecurringTransaction[],
+  addRecurringTransaction: (transaction: Omit<RecurringTransaction, 'id' | 'nextDueDate'>) => void,
+  deleteRecurringTransaction: (id: string) => void,
+  currency: Currency,
+  budgets: Budget[],
 }> = ({ recurringTransactions, addRecurringTransaction, deleteRecurringTransaction, currency, budgets }) => {
   const { t } = useTranslations();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const budgetMap = useMemo(() => new Map(budgets.map(b => [b.id, b.name])), [budgets]);
 
 
   return (
@@ -126,7 +125,7 @@ export const Recurring: React.FC<{
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-light">{t('recurring_transactions')}</h1>
         <button onClick={() => setIsModalOpen(true)} className="bg-accent hover:bg-accent-hover text-primary font-bold py-2 px-4 rounded-lg shadow-glow">
-            {t('add_recurring_transaction')}
+          {t('add_recurring_transaction')}
         </button>
       </div>
       <div className="bg-secondary shadow-lg rounded-lg border border-gray-800 overflow-hidden">
@@ -143,28 +142,43 @@ export const Recurring: React.FC<{
           </thead>
           <tbody className="divide-y divide-gray-800">
             {recurringTransactions.length === 0 ? (
-                <tr>
-                    <td colSpan={6} className="text-center py-10 text-medium">
-                        {t('no_recurring_transactions_prompt')}
-                    </td>
-                </tr>
+              <tr>
+                <td colSpan={6} className="text-center py-10 text-medium">
+                  {t('no_recurring_transactions_prompt')}
+                </td>
+              </tr>
             ) : (
-                recurringTransactions.map((rt) => (
+              recurringTransactions.map((rt) => (
                 <tr key={rt.id} className="hover:bg-primary transition-colors duration-150">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light">{rt.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{rt.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-medium capitalize">{t(rt.frequency)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{formatDate(rt.nextDueDate)}</td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold font-mono ${rt.type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light">{rt.description}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{rt.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-medium capitalize">{t(rt.frequency)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">
+                    {(() => {
+                      const today = new Date(); today.setHours(0, 0, 0, 0);
+                      const due = new Date(rt.nextDueDate + 'T00:00:00');
+                      const diffDays = Math.round((due.getTime() - today.getTime()) / 86400000);
+                      const color = diffDays < 0 ? 'bg-red-900 text-red-300' : diffDays <= 3 ? 'bg-yellow-900 text-yellow-300' : 'bg-green-900 text-green-300';
+                      const label = diffDays < 0 ? `${Math.abs(diffDays)}d overdue` : diffDays === 0 ? 'Due today' : `in ${diffDays}d`;
+                      return (
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${color}`}>
+                          <span>{formatDate(rt.nextDueDate)}</span>
+                          <span className="opacity-80">·</span>
+                          <span>{label}</span>
+                        </span>
+                      );
+                    })()}
+                  </td>
+                  <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-semibold font-mono ${rt.type === 'income' ? 'text-green-400' : 'text-red-400'}`}>
                     {rt.type === 'income' ? '+' : '-'} {formatCurrency(rt.amount, currency)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button onClick={() => deleteRecurringTransaction(rt.id)} className="text-medium hover:text-red-500">
-                        <TrashIcon className="h-5 w-5" />
+                      <TrashIcon className="h-5 w-5" />
                     </button>
-                    </td>
+                  </td>
                 </tr>
-                ))
+              ))
             )}
           </tbody>
         </table>

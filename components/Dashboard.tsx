@@ -116,6 +116,123 @@ const BudgetAlerts: React.FC<{ alerts: BudgetAlert[], currency: Currency }> = ({
 }
 
 
+const MonthlySummary: React.FC<{ transactions: Transaction[], currency: Currency }> = ({ transactions, currency }) => {
+    const now = new Date();
+    const month = now.getMonth();
+    const year = now.getFullYear();
+
+    const monthTx = transactions.filter(tx => {
+        const d = new Date(tx.date + 'T00:00:00');
+        return d.getMonth() === month && d.getFullYear() === year;
+    });
+
+    const income = monthTx.filter(tx => tx.type === 'income').reduce((s, tx) => s + tx.amount, 0);
+    const expenses = monthTx.filter(tx => tx.type === 'expense').reduce((s, tx) => s + tx.amount, 0);
+    const net = income - expenses;
+    const max = Math.max(income, expenses, 1);
+    const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    return (
+        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+            <h3 className="text-xl font-semibold text-light mb-4">Monthly Summary <span className="text-accent text-base font-normal">({monthName})</span></h3>
+            <div className="space-y-3">
+                <div>
+                    <div className="flex justify-between text-sm mb-1">
+                        <span className="text-medium">Income</span>
+                        <span className="font-mono text-green-400">{formatCurrency(income, currency)}</span>
+                    </div>
+                    <div className="w-full bg-primary rounded-full h-2.5">
+                        <div className="bg-green-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${(income / max) * 100}%` }} />
+                    </div>
+                </div>
+                <div>
+                    <div className="flex justify-between text-sm mb-1">
+                        <span className="text-medium">Expenses</span>
+                        <span className="font-mono text-red-400">{formatCurrency(expenses, currency)}</span>
+                    </div>
+                    <div className="w-full bg-primary rounded-full h-2.5">
+                        <div className="bg-red-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${(expenses / max) * 100}%` }} />
+                    </div>
+                </div>
+                <div className="pt-2 border-t border-gray-700 flex justify-between items-center">
+                    <span className="text-sm text-medium">Net</span>
+                    <span className={`font-mono font-bold text-lg ${net >= 0 ? 'text-green-400' : 'text-red-400'}`}>{net >= 0 ? '+' : ''}{formatCurrency(net, currency)}</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Donut chart colors
+const DONUT_COLORS = ['#38BDF8', '#34D399', '#F87171', '#FBBF24', '#A78BFA', '#FB923C', '#60A5FA', '#F472B6', '#2DD4BF', '#818CF8'];
+
+const SpendingDonut: React.FC<{ transactions: Transaction[], currency: Currency }> = ({ transactions, currency }) => {
+    const expenses = transactions.filter(tx => tx.type === 'expense');
+    const total = expenses.reduce((s, tx) => s + tx.amount, 0);
+
+    const byCat = useMemo(() => {
+        const map: Record<string, number> = {};
+        expenses.forEach(tx => { map[tx.category] = (map[tx.category] || 0) + tx.amount; });
+        return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    }, [expenses]);
+
+    if (total === 0) return (
+        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+            <h3 className="text-xl font-semibold text-light mb-4">Spending Breakdown</h3>
+            <p className="text-medium text-center py-4">No expense data available.</p>
+        </div>
+    );
+
+    // SVG donut
+    const r = 60, cx = 80, cy = 80, strokeW = 22;
+    const circ = 2 * Math.PI * r;
+    let cumulative = 0;
+    const slices = byCat.map(([cat, amount], i) => {
+        const pct = amount / total;
+        const dash = pct * circ;
+        const gap = circ - dash;
+        const offset = circ - cumulative * circ;
+        cumulative += pct;
+        return { cat, amount, pct, dash, gap, offset, color: DONUT_COLORS[i % DONUT_COLORS.length] };
+    });
+
+    return (
+        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+            <h3 className="text-xl font-semibold text-light mb-4">Spending Breakdown</h3>
+            <div className="flex items-center gap-6">
+                <svg width="160" height="160" viewBox="0 0 160 160" className="flex-shrink-0">
+                    {slices.map(s => (
+                        <circle
+                            key={s.cat}
+                            cx={cx} cy={cy} r={r}
+                            fill="none"
+                            stroke={s.color}
+                            strokeWidth={strokeW}
+                            strokeDasharray={`${s.dash} ${s.gap}`}
+                            strokeDashoffset={s.offset}
+                            style={{ transition: 'stroke-dasharray 0.5s ease' }}
+                        />
+                    ))}
+                    <text x={cx} y={cy - 6} textAnchor="middle" className="fill-current" style={{ fill: '#E6EDF3', fontSize: '11px' }}>Total</text>
+                    <text x={cx} y={cy + 12} textAnchor="middle" style={{ fill: '#38BDF8', fontSize: '10px', fontWeight: 'bold' }}>{formatCurrency(total, currency)}</text>
+                </svg>
+                <ul className="flex-1 space-y-2 text-sm">
+                    {slices.map(s => (
+                        <li key={s.cat} className="flex items-center justify-between gap-2">
+                            <span className="flex items-center gap-1.5 text-medium truncate">
+                                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: s.color }} />
+                                {s.cat}
+                            </span>
+                            <span className="font-mono text-light text-xs">{Math.round(s.pct * 100)}%</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+};
+
+
 export const Dashboard: React.FC<{
     transactions: Transaction[],
     activeBudget: Budget | undefined,
@@ -140,7 +257,6 @@ export const Dashboard: React.FC<{
 
         const alerts: BudgetAlert[] = [];
         for (const [category, limit] of Object.entries(activeBudget.limits)) {
-            // FIX: Add type guard for `limit` as Object.entries may return `unknown` values.
             if (typeof limit === 'number' && limit > 0) {
                 const spent = spendingByCategory[category] || 0;
                 const percentage = (spent / limit) * 100;
@@ -150,7 +266,6 @@ export const Dashboard: React.FC<{
             }
         }
         return alerts;
-
     }, [transactions, activeBudget]);
 
     return (
@@ -159,6 +274,7 @@ export const Dashboard: React.FC<{
 
             <BudgetAlerts alerts={budgetAlerts} currency={currency} />
 
+            {/* Top summary cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="p-6 bg-secondary rounded-lg border border-gray-800">
                     <h4 className="text-sm font-medium text-medium uppercase tracking-wider">{t('total_balance')}</h4>
@@ -171,6 +287,15 @@ export const Dashboard: React.FC<{
                 <div className="p-6 bg-secondary rounded-lg border border-gray-800">
                     <h4 className="text-sm font-medium text-medium uppercase tracking-wider">{t('total_expenses')}</h4>
                     <p className="text-3xl font-bold mt-1 text-red-400 font-mono">{formatCurrency(totalExpenses, currency)}</p>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div className="lg:col-span-2">
+                    <MonthlySummary transactions={transactions} currency={currency} />
+                </div>
+                <div className="lg:col-span-1">
+                    <SpendingDonut transactions={transactions} currency={currency} />
                 </div>
             </div>
 

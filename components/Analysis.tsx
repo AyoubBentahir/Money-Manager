@@ -121,13 +121,30 @@ const TrendChart: React.FC<{
                     <polyline points={expensePoints} fill="none" stroke="#ef4444" strokeWidth="2" />
                 </>
                 }
-                {data.map((d, i) => (
-                    <g key={d.date}>
-                        <circle cx={xScale(i)} cy={yScale(d.income)} r="4" fill="#22c55e" />
-                        <circle cx={xScale(i)} cy={yScale(d.expense)} r="4" fill="#ef4444" />
-                        <text x={xScale(i)} y={height - padding + 25} fill="#8B949E" textAnchor="middle" fontSize="12">{formatXAxisLabel(d.date)}</text>
-                    </g>
-                ))}
+                {(() => {
+                    const maxLabels = 12;
+                    const step = data.length <= maxLabels ? 1 : Math.ceil(data.length / maxLabels);
+                    return data.map((d, i) => {
+                        const showLabel = i === 0 || i === data.length - 1 || i % step === 0;
+                        return (
+                            <g key={d.date}>
+                                <circle cx={xScale(i)} cy={yScale(d.income)} r="4" fill="#22c55e" />
+                                <circle cx={xScale(i)} cy={yScale(d.expense)} r="4" fill="#ef4444" />
+                                {showLabel && (
+                                    <text
+                                        x={xScale(i)}
+                                        y={height - padding + 25}
+                                        fill="#8B949E"
+                                        textAnchor="middle"
+                                        fontSize="11"
+                                    >
+                                        {formatXAxisLabel(d.date)}
+                                    </text>
+                                )}
+                            </g>
+                        );
+                    });
+                })()}
             </svg>
             <div className="flex justify-center gap-6 mt-4">
                 <div className="flex items-center"><div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>{t('income')}</div>

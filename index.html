@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JarvisAI</title>
+    <title>MoneyTracker AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -26,11 +26,43 @@
             },
             boxShadow: {
               'glow': '0 0 15px 0 rgba(56, 189, 248, 0.4)',
+            },
+            keyframes: {
+              'fade-in': {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            },
+            animation: {
+              'fade-in': 'fade-in 0.25s ease-out',
             }
           },
         },
       };
     </script>
+    <style>
+      /* Light theme overrides */
+      [data-theme='light'] {
+        --color-primary: #F3F4F6;
+        --color-secondary: #FFFFFF;
+        --color-light: #111827;
+        --color-medium: #6B7280;
+      }
+      [data-theme='light'] .bg-primary { background-color: #F3F4F6 !important; }
+      [data-theme='light'] .bg-secondary { background-color: #FFFFFF !important; }
+      [data-theme='light'] .text-light { color: #111827 !important; }
+      [data-theme='light'] .text-medium { color: #6B7280 !important; }
+      [data-theme='light'] .border-gray-800 { border-color: #E5E7EB !important; }
+      [data-theme='light'] .border-gray-700 { border-color: #D1D5DB !important; }
+      [data-theme='light'] .border-gray-600 { border-color: #D1D5DB !important; }
+      [data-theme='light'] .divide-gray-800 > * + * { border-color: #E5E7EB !important; }
+      [data-theme='light'] .hover\:bg-gray-800:hover { background-color: #F3F4F6 !important; }
+      [data-theme='light'] .hover\:bg-primary:hover { background-color: #F3F4F6 !important; }
+      [data-theme='light'] .bg-primary.bg-opacity-70 { background-color: rgba(243,244,246,0.85) !important; }
+      [data-theme='light'] input, [data-theme='light'] select, [data-theme='light'] textarea {
+        color: #111827;
+      }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
