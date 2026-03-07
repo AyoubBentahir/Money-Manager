@@ -1,4 +1,4 @@
-# Logs
+﻿# Logs
 logs
 *.log
 npm-debug.log*
@@ -25,3 +25,4 @@ output.txt
 *.njsproj
 *.sln
 *.sw?
+MoneyTrackerAI-*.zip

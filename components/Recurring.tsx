@@ -47,29 +47,29 @@ const AddRecurringModal: React.FC<AddRecurringModalProps> = ({ onClose, onAdd, b
   const categories = type === 'expense' ? ExpenseCategory : IncomeCategory;
 
   return (
-    <div className="fixed inset-0 bg-primary bg-opacity-75 flex justify-center items-center z-40" onClick={onClose}>
-      <div className="bg-secondary rounded-lg shadow-glow border border-gray-800 p-8 w-full max-w-md" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-[#020617]/80 backdrop-blur-sm flex justify-center items-center z-40" onClick={onClose}>
+      <div className="bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 p-8 w-full max-w-md" onClick={e => e.stopPropagation()}>
         <h2 className="text-2xl font-bold mb-6 text-light">{t('add_recurring_transaction')}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-medium text-sm font-bold mb-2">{t('type')}</label>
             <div className="flex rounded-md shadow-sm">
-              <button type="button" onClick={() => handleTypeChange('expense')} className={`px-4 py-2 rounded-l-md w-1/2 ${type === 'expense' ? 'bg-accent text-primary font-bold' : 'bg-primary'}`}>{t('expense')}</button>
-              <button type="button" onClick={() => handleTypeChange('income')} className={`px-4 py-2 rounded-r-md w-1/2 ${type === 'income' ? 'bg-accent text-primary font-bold' : 'bg-primary'}`}>{t('income')}</button>
+              <button type="button" onClick={() => handleTypeChange('expense')} className={`px-4 py-2 rounded-l-md w-1/2 ${type === 'expense' ? 'bg-accent text-primary font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-[#0f172a]/80 text-medium hover:bg-[#0f172a]'} transition-all`}>{t('expense')}</button>
+              <button type="button" onClick={() => handleTypeChange('income')} className={`px-4 py-2 rounded-r-md w-1/2 ${type === 'income' ? 'bg-accent text-primary font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-[#0f172a]/80 text-medium hover:bg-[#0f172a]'} transition-all`}>{t('income')}</button>
             </div>
           </div>
           <div className="mb-4">
             <label htmlFor="description" className="block text-medium text-sm font-bold mb-2">{t('description')}</label>
-            <input id="description" type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+            <input id="description" type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required />
           </div>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label htmlFor="amount" className="block text-medium text-sm font-bold mb-2">{t('amount')}</label>
-              <input id="amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+              <input id="amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required />
             </div>
             <div>
               <label htmlFor="frequency" className="block text-medium text-sm font-bold mb-2">{t('frequency')}</label>
-              <select id="frequency" value={frequency} onChange={e => setFrequency(e.target.value as Frequency)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+              <select id="frequency" value={frequency} onChange={e => setFrequency(e.target.value as Frequency)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200">
                 <option value="daily">{t('daily')}</option>
                 <option value="weekly">{t('weekly')}</option>
                 <option value="monthly">{t('monthly')}</option>
@@ -77,10 +77,10 @@ const AddRecurringModal: React.FC<AddRecurringModalProps> = ({ onClose, onAdd, b
               </select>
             </div>
           </div>
-          {type === 'expense' && budgets.length > 0 && (
+          {budgets.length > 0 && (
             <div className="mb-4">
               <label htmlFor="budget" className="block text-medium text-sm font-bold mb-2">{t('budget')}</label>
-              <select id="budget" value={budgetId} onChange={e => setBudgetId(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+              <select id="budget" value={budgetId} onChange={e => setBudgetId(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200">
                 {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
@@ -88,13 +88,13 @@ const AddRecurringModal: React.FC<AddRecurringModalProps> = ({ onClose, onAdd, b
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <label htmlFor="category" className="block text-medium text-sm font-bold mb-2">{t('category')}</label>
-              <select id="category" value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+              <select id="category" value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200">
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label htmlFor="startDate" className="block text-medium text-sm font-bold mb-2">{t('start_date_label')}</label>
-              <input id="startDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+              <input id="startDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required />
             </div>
           </div>
           <div className="flex justify-end gap-4">
@@ -120,7 +120,7 @@ export const Recurring: React.FC<{
 
 
   return (
-    <div className="p-6 bg-primary min-h-full">
+    <div className="p-6 bg-transparent min-h-full">
       {isModalOpen && <AddRecurringModal onClose={() => setIsModalOpen(false)} onAdd={addRecurringTransaction} budgets={budgets} />}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold text-light">{t('recurring_transactions')}</h1>
@@ -128,9 +128,9 @@ export const Recurring: React.FC<{
           {t('add_recurring_transaction')}
         </button>
       </div>
-      <div className="bg-secondary shadow-lg rounded-lg border border-gray-800 overflow-hidden">
+      <div className="bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 overflow-hidden">
         <table className="min-w-full">
-          <thead className="bg-primary">
+          <thead className="bg-[#0f172a]/80 backdrop-blur-sm text-medium/80 border-b border-gray-700/50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('description')}</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('category')}</th>
@@ -149,7 +149,7 @@ export const Recurring: React.FC<{
               </tr>
             ) : (
               recurringTransactions.map((rt) => (
-                <tr key={rt.id} className="hover:bg-primary transition-colors duration-150">
+                <tr key={rt.id} className="hover:bg-white/5 transition-all duration-200">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light">{rt.description}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{rt.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-medium capitalize">{t(rt.frequency)}</td>

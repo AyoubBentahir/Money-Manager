@@ -48,29 +48,29 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClose, onAd
   const categories = type === 'expense' ? ExpenseCategory : IncomeCategory;
 
   return (
-    <div className="fixed inset-0 bg-primary bg-opacity-75 flex justify-center items-center z-40" onClick={onClose}>
-      <div className="bg-secondary rounded-lg shadow-glow border border-gray-800 p-8 w-full max-w-md" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-[#020617]/80 backdrop-blur-sm flex justify-center items-center z-40" onClick={onClose}>
+      <div className="bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 p-8 w-full max-w-md" onClick={e => e.stopPropagation()}>
         <h2 className="text-2xl font-bold mb-6 text-light">{t('add_new_transaction')}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label className="block text-medium text-sm font-bold mb-2">{t('type')}</label>
             <div className="flex rounded-md shadow-sm">
-              <button type="button" onClick={() => handleTypeChange('expense')} className={`px-4 py-2 rounded-l-md w-1/2 ${type === 'expense' ? 'bg-accent text-primary font-bold' : 'bg-primary'}`}>{t('expense')}</button>
-              <button type="button" onClick={() => handleTypeChange('income')} className={`px-4 py-2 rounded-r-md w-1/2 ${type === 'income' ? 'bg-accent text-primary font-bold' : 'bg-primary'}`}>{t('income')}</button>
+              <button type="button" onClick={() => handleTypeChange('expense')} className={`px-4 py-2 rounded-l-md w-1/2 ${type === 'expense' ? 'bg-accent text-primary font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-[#0f172a]/80 text-medium hover:bg-[#0f172a]'} transition-all`}>{t('expense')}</button>
+              <button type="button" onClick={() => handleTypeChange('income')} className={`px-4 py-2 rounded-r-md w-1/2 ${type === 'income' ? 'bg-accent text-primary font-bold shadow-[0_0_15px_rgba(6,182,212,0.4)]' : 'bg-[#0f172a]/80 text-medium hover:bg-[#0f172a]'} transition-all`}>{t('income')}</button>
             </div>
           </div>
           <div className="mb-4">
             <label htmlFor="description" className="block text-medium text-sm font-bold mb-2">{t('description')}</label>
-            <input id="description" type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+            <input id="description" type="text" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required />
           </div>
           <div className="mb-4">
             <label htmlFor="amount" className="block text-medium text-sm font-bold mb-2">{t('amount')}</label>
-            <input id="amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+            <input id="amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required />
           </div>
-          {type === 'expense' && budgets.length > 0 && (
+          {budgets.length > 0 && (
             <div className="mb-4">
               <label htmlFor="budget" className="block text-medium text-sm font-bold mb-2">{t('budget')}</label>
-              <select id="budget" value={budgetId} onChange={e => setBudgetId(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required>
+              <select id="budget" value={budgetId} onChange={e => setBudgetId(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required>
                 {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
             </div>
@@ -78,13 +78,13 @@ const AddTransactionModal: React.FC<AddTransactionModalProps> = ({ onClose, onAd
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <label htmlFor="category" className="block text-medium text-sm font-bold mb-2">{t('category')}</label>
-              <select id="category" value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+              <select id="category" value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200">
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label htmlFor="date" className="block text-medium text-sm font-bold mb-2">{t('date')}</label>
-              <input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+              <input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required />
             </div>
           </div>
           <div className="flex justify-end gap-4">
@@ -138,7 +138,7 @@ export const Transactions: React.FC<{
   };
 
   return (
-    <div className="p-6 bg-primary min-h-full">
+    <div className="p-6 bg-transparent min-h-full">
       {modalOpen && <AddTransactionModal onClose={closeModal} onAdd={addTransaction} budgets={budgets} activeBudgetId={activeBudgetId} />}
 
       {/* Header */}
@@ -157,14 +157,14 @@ export const Transactions: React.FC<{
           value={searchQuery}
           onChange={handleSearchChange}
           placeholder="Search by description or category..."
-          className="w-full bg-secondary p-3 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent text-light placeholder-gray-500"
+          className="w-full bg-secondary/40 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-secondary/80 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-accent text-light placeholder-gray-500"
         />
       </div>
 
       {/* Table */}
-      <div className="bg-secondary shadow-lg rounded-lg border border-gray-800 overflow-hidden">
+      <div className="bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 overflow-hidden">
         <table className="min-w-full">
-          <thead className="bg-primary">
+          <thead className="bg-[#0f172a]/80 backdrop-blur-sm text-medium/80 border-b border-gray-700/50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('date')}</th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('description')}</th>
@@ -183,7 +183,7 @@ export const Transactions: React.FC<{
               </tr>
             ) : (
               paginated.map((tx) => (
-                <tr key={tx.id} className="hover:bg-primary transition-colors duration-150">
+                <tr key={tx.id} className="hover:bg-white/5 transition-all duration-200">
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{formatDate(tx.date)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light">{tx.description}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{tx.category}</td>

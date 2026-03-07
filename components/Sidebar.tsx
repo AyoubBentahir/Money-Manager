@@ -28,7 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, onI
   ], [t]);
 
   return (
-    <aside className="w-64 bg-secondary text-light flex flex-col border-r border-gray-800">
+    <aside className="w-64 bg-secondary/60 backdrop-blur-xl border-r border-gray-800/50 text-light flex flex-col shadow-xl z-10">
       <div className="p-6 text-2xl font-semibold text-center border-b border-gray-800">
         MoneyTracker AI
       </div>
@@ -40,8 +40,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, onI
                 href="#"
                 onClick={(e) => { e.preventDefault(); onViewChange(item.view); }}
                 className={`flex items-center p-3 my-1 rounded-lg transition-all duration-200 ${currentView === item.view
-                    ? 'bg-accent text-primary font-semibold shadow-glow'
-                    : 'text-medium hover:bg-gray-800 hover:text-light'
+                  ? 'bg-accent text-primary font-semibold shadow-glow'
+                  : 'text-medium hover:bg-gray-800 hover:text-light'
                   }`}
               >
                 <item.icon className="h-5 w-5 mr-3" />

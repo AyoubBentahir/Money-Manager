@@ -3,6 +3,7 @@ import { Goal, Currency } from '../types';
 import { useTranslations } from '../contexts/TranslationContext';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { TrashIcon, TargetIcon } from './icons';
+import { useToast } from '../contexts/ToastContext';
 
 // ─── Priority Types ──────────────────────────────────────────────────────────
 type Priority = 'high' | 'medium' | 'low';
@@ -100,22 +101,22 @@ const GoalModal: React.FC<GoalModalProps> = ({ onClose, onSave, goal }) => {
     };
 
     return (
-        <div className="fixed inset-0 bg-primary bg-opacity-75 flex justify-center items-center z-40" onClick={onClose}>
-            <div className="bg-secondary rounded-lg shadow-glow border border-gray-800 p-8 w-full max-w-md" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-[#020617]/80 backdrop-blur-sm flex justify-center items-center z-40" onClick={onClose}>
+            <div className="bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 p-8 w-full max-w-md" onClick={e => e.stopPropagation()}>
                 <h2 className="text-2xl font-bold mb-6 text-light">{t('new_goal')}</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-4">
                         <label htmlFor="name" className="block text-medium text-sm font-bold mb-2">{t('goal_name')}</label>
-                        <input id="name" type="text" value={name} placeholder={t('eg_new_laptop')} onChange={e => setName(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+                        <input id="name" type="text" value={name} placeholder={t('eg_new_laptop')} onChange={e => setName(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required />
                     </div>
                     <div className="grid grid-cols-2 gap-4 mb-6">
                         <div>
                             <label htmlFor="targetAmount" className="block text-medium text-sm font-bold mb-2">{t('target_amount')}</label>
-                            <input id="targetAmount" type="number" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+                            <input id="targetAmount" type="number" value={targetAmount} onChange={e => setTargetAmount(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required />
                         </div>
                         <div>
                             <label htmlFor="targetDate" className="block text-medium text-sm font-bold mb-2">{t('target_date')}</label>
-                            <input id="targetDate" type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required />
+                            <input id="targetDate" type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required />
                         </div>
                     </div>
                     <div className="flex justify-end gap-4">
@@ -145,14 +146,14 @@ const ContributionModal: React.FC<ContributionModalProps> = ({ onClose, onContri
     };
 
     return (
-        <div className="fixed inset-0 bg-primary bg-opacity-75 flex justify-center items-center z-40" onClick={onClose}>
-            <div className="bg-secondary rounded-lg shadow-glow border border-gray-800 p-8 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-[#020617]/80 backdrop-blur-sm flex justify-center items-center z-40" onClick={onClose}>
+            <div className="bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 p-8 w-full max-w-sm" onClick={e => e.stopPropagation()}>
                 <h2 className="text-2xl font-bold mb-2 text-light">{t('add_contribution')}</h2>
                 <p className="text-medium mb-6">{t('to')} <span className="font-semibold text-accent">{goalName}</span></p>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-6">
                         <label htmlFor="contributionAmount" className="block text-medium text-sm font-bold mb-2">{t('contribution_amount')}</label>
-                        <input id="contributionAmount" type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" required autoFocus />
+                        <input id="contributionAmount" type="number" value={amount} onChange={e => setAmount(e.target.value)} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" required autoFocus />
                     </div>
                     <div className="flex justify-end gap-4">
                         <button type="button" onClick={onClose} className="bg-gray-700 hover:bg-gray-600 text-light font-bold py-2 px-4 rounded-md">{t('cancel')}</button>
@@ -172,6 +173,7 @@ const GoalCard: React.FC<{
     currency: Currency;
 }> = ({ goal, onContribute, onDelete, currency }) => {
     const { t } = useTranslations();
+    const { showToast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
     // Feature 1: Priority state (persisted locally per card via state)
@@ -180,14 +182,23 @@ const GoalCard: React.FC<{
 
     const percentage = Math.min((goal.currentAmount / goal.targetAmount) * 100, 100);
 
-    // Feature: Confetti when first reaching 100%
+    // Feature: Confetti when reaching milestone
     useEffect(() => {
-        if (percentage >= 100 && prevPercentageRef.current < 100) {
-            setShowConfetti(true);
-            setTimeout(() => setShowConfetti(false), 3500);
+        for (const ms of MILESTONES) {
+            // We only fire if we crossed the threshold, not if we load at 100% initially (prev > 0 helps avoid loading confetti)
+            if (percentage >= ms && prevPercentageRef.current < ms && prevPercentageRef.current > 0) {
+                setShowConfetti(true);
+                showToast(`🎉 ${ms}% Milestone reached for ${goal.name}!`, 'success');
+                setTimeout(() => setShowConfetti(false), 3500);
+                break;
+            } else if (percentage >= 100 && prevPercentageRef.current < 100 && prevPercentageRef.current === 0) {
+                // But we do want 100% confetti if we literally just made the final payment and it went 0 -> 100 (unlikely but possible)
+                setShowConfetti(true);
+                setTimeout(() => setShowConfetti(false), 3500);
+            }
         }
         prevPercentageRef.current = percentage;
-    }, [percentage]);
+    }, [percentage, goal.name, showToast]);
 
     // Feature: Estimated completion date
     const estimatedCompletion = useMemo(() => {
@@ -220,7 +231,7 @@ const GoalCard: React.FC<{
     const priorityCfg = PRIORITY_CONFIG[priority];
 
     return (
-        <div className="relative bg-secondary rounded-lg border border-gray-800 p-6 flex flex-col overflow-hidden">
+        <div className="relative bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 p-6 flex flex-col overflow-hidden">
             <Confetti active={showConfetti} />
             {isModalOpen && <ContributionModal onClose={() => setIsModalOpen(false)} onContribute={handleContribute} goalName={goal.name} />}
 
@@ -240,7 +251,7 @@ const GoalCard: React.FC<{
                                 <button
                                     key={key}
                                     onClick={() => setPriority(key)}
-                                    className={`flex items-center gap-2 px-3 py-2 text-xs hover:bg-primary transition-colors ${cfg.color}`}
+                                    className={`flex items-center gap-2 px-3 py-2 text-xs hover:bg-[#0f172a]/80 transition-colors ${cfg.color}`}
                                 >
                                     <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
                                     {cfg.label}
@@ -273,7 +284,7 @@ const GoalCard: React.FC<{
             )}
 
             {/* Progress bar */}
-            <div className="w-full bg-primary rounded-full h-4 border border-gray-700 mb-1 relative">
+            <div className="w-full bg-[#0f172a]/50 rounded-full h-4 shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)] mb-1 relative">
                 <div
                     className={`h-4 rounded-full transition-all duration-500 ${percentage >= 100 ? 'bg-green-500' : 'bg-accent'}`}
                     style={{ width: `${percentage}%` }}
@@ -330,7 +341,7 @@ export const Goals: React.FC<{
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
-        <div className="p-6 bg-primary min-h-full">
+        <div className="p-6 bg-transparent min-h-full">
             {isModalOpen && <GoalModal onClose={() => setIsModalOpen(false)} onSave={addGoal} />}
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-4xl font-bold text-light">{t('goal_management')}</h1>
@@ -340,7 +351,7 @@ export const Goals: React.FC<{
             </div>
 
             {goals.length === 0 ? (
-                <div className="text-center py-20 bg-secondary rounded-lg border border-gray-800">
+                <div className="text-center py-20 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
                     <TargetIcon className="h-16 w-16 mx-auto text-medium mb-4" />
                     <h2 className="text-2xl font-semibold text-light mb-2">{t('no_goals_yet')}</h2>
                     <p className="text-medium">{t('no_goals_prompt')}</p>

@@ -2,7 +2,6 @@ import * as XLSX from 'xlsx';
 import { Transaction, Budget, FullAppState, RecurringTransaction, Goal } from '../types';
 
 // Type guards for robust import
-const isObject = (value: any): value is object => value !== null && typeof value === 'object' && !Array.isArray(value);
 
 const importStateFromExcel = async (file: File): Promise<FullAppState> => {
     const data = await file.arrayBuffer();
@@ -11,7 +10,7 @@ const importStateFromExcel = async (file: File): Promise<FullAppState> => {
     // Read each sheet
     const transactions = XLSX.utils.sheet_to_json<Transaction>(workbook.Sheets['Transactions'] || []);
     const budgetsRaw = XLSX.utils.sheet_to_json<Budget>(workbook.Sheets['Budgets'] || []);
-    const budgetLimits = XLSX.utils.sheet_to_json<{ budgetId: string, category: any, limit: number }>(workbook.Sheets['BudgetLimits'] || []);
+    const budgetLimits = XLSX.utils.sheet_to_json<{ budgetId: string, category: string, limit: number }>(workbook.Sheets['BudgetLimits'] || []);
     const recurringTransactions = XLSX.utils.sheet_to_json<RecurringTransaction>(workbook.Sheets['RecurringTransactions'] || []);
     const goals = XLSX.utils.sheet_to_json<Goal>(workbook.Sheets['Goals'] || []);
     const settingsRaw = XLSX.utils.sheet_to_json<{ key: string, value: any }>(workbook.Sheets['Settings'] || []);
@@ -22,7 +21,7 @@ const importStateFromExcel = async (file: File): Promise<FullAppState> => {
     budgetLimits.forEach(limit => {
         const budget = budgetMap.get(limit.budgetId);
         if (budget) {
-            budget.limits[limit.category] = limit.limit;
+            budget.limits[limit.category as keyof typeof budget.limits] = limit.limit;
         }
     });
 
@@ -60,44 +59,44 @@ const importStateFromExcel = async (file: File): Promise<FullAppState> => {
 };
 
 const exportStateToExcel = (state: FullAppState): Promise<void> => {
-  return new Promise((resolve) => {
-    const { transactions, budgets, recurringTransactions, goals, settings } = state;
+    return new Promise((resolve) => {
+        const { transactions, budgets, recurringTransactions, goals, settings } = state;
 
-    // Prepare data for sheets
-    const budgetLimits = budgets.flatMap(b =>
-        Object.entries(b.limits).map(([category, limit]) => ({
-            budgetId: b.id,
-            category,
-            limit
-        }))
-    );
-    const budgetsForSheet = budgets.map(({ id, name }) => ({ id, name }));
-    const settingsForSheet = Object.entries(settings).map(([key, value]) => ({ key, value }));
+        // Prepare data for sheets
+        const budgetLimits = budgets.flatMap(b =>
+            Object.entries(b.limits).map(([category, limit]) => ({
+                budgetId: b.id,
+                category,
+                limit
+            }))
+        );
+        const budgetsForSheet = budgets.map(({ id, name }) => ({ id, name }));
+        const settingsForSheet = Object.entries(settings).map(([key, value]) => ({ key, value }));
 
-    // Create worksheets
-    const transactionsWs = XLSX.utils.json_to_sheet(transactions);
-    const budgetsWs = XLSX.utils.json_to_sheet(budgetsForSheet);
-    const budgetLimitsWs = XLSX.utils.json_to_sheet(budgetLimits);
-    const recurringWs = XLSX.utils.json_to_sheet(recurringTransactions);
-    const goalsWs = XLSX.utils.json_to_sheet(goals);
-    const settingsWs = XLSX.utils.json_to_sheet(settingsForSheet);
+        // Create worksheets
+        const transactionsWs = XLSX.utils.json_to_sheet(transactions);
+        const budgetsWs = XLSX.utils.json_to_sheet(budgetsForSheet);
+        const budgetLimitsWs = XLSX.utils.json_to_sheet(budgetLimits);
+        const recurringWs = XLSX.utils.json_to_sheet(recurringTransactions);
+        const goalsWs = XLSX.utils.json_to_sheet(goals);
+        const settingsWs = XLSX.utils.json_to_sheet(settingsForSheet);
 
-    // Create workbook and append sheets
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, transactionsWs, 'Transactions');
-    XLSX.utils.book_append_sheet(workbook, budgetsWs, 'Budgets');
-    XLSX.utils.book_append_sheet(workbook, budgetLimitsWs, 'BudgetLimits');
-    XLSX.utils.book_append_sheet(workbook, recurringWs, 'RecurringTransactions');
-    XLSX.utils.book_append_sheet(workbook, goalsWs, 'Goals');
-    XLSX.utils.book_append_sheet(workbook, settingsWs, 'Settings');
+        // Create workbook and append sheets
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, transactionsWs, 'Transactions');
+        XLSX.utils.book_append_sheet(workbook, budgetsWs, 'Budgets');
+        XLSX.utils.book_append_sheet(workbook, budgetLimitsWs, 'BudgetLimits');
+        XLSX.utils.book_append_sheet(workbook, recurringWs, 'RecurringTransactions');
+        XLSX.utils.book_append_sheet(workbook, goalsWs, 'Goals');
+        XLSX.utils.book_append_sheet(workbook, settingsWs, 'Settings');
 
-    XLSX.writeFile(workbook, 'jarvisai_backup.xlsx');
-    resolve();
-  });
+        XLSX.writeFile(workbook, 'jarvisai_backup.xlsx');
+        resolve();
+    });
 };
 
 
 export const excelService = {
-  importStateFromExcel,
-  exportStateToExcel,
+    importStateFromExcel,
+    exportStateToExcel,
 };

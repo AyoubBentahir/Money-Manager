@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Transaction, Currency, TransactionType, Budget } from '../types';
+import { Transaction, Currency, TransactionType, Budget, RecurringTransaction } from '../types';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { useTranslations } from '../contexts/TranslationContext';
+import PredictiveCashFlow from './PredictiveCashFlow';
 
 type GroupByOption = 'day' | 'month' | 'year';
 
@@ -104,7 +105,7 @@ const TrendChart: React.FC<{
     };
 
     return (
-        <div className="p-6 bg-secondary rounded-lg border border-gray-800" onWheel={handleWheel}>
+        <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50" onWheel={handleWheel}>
             <h3 className="text-xl font-semibold mb-4 text-light">{t('transaction_trends')}</h3>
             {onYAxisIntervalChange && <p className="text-xs text-medium italic mb-2">Scroll on the chart to adjust the Y-axis scale</p>}
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
@@ -155,7 +156,7 @@ const TrendChart: React.FC<{
 };
 
 
-export const Analysis: React.FC<{ transactions: Transaction[], currency: Currency, budgets: Budget[] }> = ({ transactions, currency, budgets }) => {
+export const Analysis: React.FC<{ transactions: Transaction[], recurringTransactions: RecurringTransaction[], currency: Currency, budgets: Budget[] }> = ({ transactions, recurringTransactions, currency, budgets }) => {
     const { t } = useTranslations();
     const today = new Date().toISOString().split('T')[0];
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -232,23 +233,26 @@ export const Analysis: React.FC<{ transactions: Transaction[], currency: Currenc
     const yInterval = filters.yAxisInterval ? parseFloat(filters.yAxisInterval) : null;
 
     return (
-        <div className="p-6 bg-primary min-h-full">
+        <div className="p-6 bg-transparent min-h-full">
             <h1 className="text-4xl font-bold mb-8 text-light">{t('analysis')}</h1>
 
+            <PredictiveCashFlow transactions={transactions} recurringTransactions={recurringTransactions} currency={currency} />
+            <br />
+
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-1 bg-secondary p-6 rounded-lg border border-gray-800 self-start space-y-4">
+                <div className="lg:col-span-1 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 p-6 self-start space-y-4">
                     <h3 className="text-xl font-semibold text-light">{t('filters')}</h3>
                     <div>
                         <label htmlFor="startDate" className="block text-medium text-sm font-bold mb-2">{t('start_date')}</label>
-                        <input id="startDate" name="startDate" type="date" value={filters.startDate} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" />
+                        <input id="startDate" name="startDate" type="date" value={filters.startDate} onChange={handleFilterChange} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" />
                     </div>
                     <div>
                         <label htmlFor="endDate" className="block text-medium text-sm font-bold mb-2">{t('end_date')}</label>
-                        <input id="endDate" name="endDate" type="date" value={filters.endDate} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent" />
+                        <input id="endDate" name="endDate" type="date" value={filters.endDate} onChange={handleFilterChange} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200" />
                     </div>
                     <div>
                         <label htmlFor="type" className="block text-medium text-sm font-bold mb-2">{t('type')}</label>
-                        <select id="type" name="type" value={filters.type} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                        <select id="type" name="type" value={filters.type} onChange={handleFilterChange} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200">
                             <option value="all">{t('all')}</option>
                             <option value="income">{t('income')}</option>
                             <option value="expense">{t('expense')}</option>
@@ -256,14 +260,14 @@ export const Analysis: React.FC<{ transactions: Transaction[], currency: Currenc
                     </div>
                     <div>
                         <label htmlFor="budgetId" className="block text-medium text-sm font-bold mb-2">{t('budget')}</label>
-                        <select id="budgetId" name="budgetId" value={filters.budgetId} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                        <select id="budgetId" name="budgetId" value={filters.budgetId} onChange={handleFilterChange} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200">
                             <option value="all">{t('all_budgets')}</option>
                             {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                         </select>
                     </div>
                     <div>
                         <label htmlFor="groupBy" className="block text-medium text-sm font-bold mb-2">{t('group_by')}</label>
-                        <select id="groupBy" name="groupBy" value={filters.groupBy} onChange={handleFilterChange} className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent">
+                        <select id="groupBy" name="groupBy" value={filters.groupBy} onChange={handleFilterChange} className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200">
                             <option value="day">{t('day')}</option>
                             <option value="month">{t('month')}</option>
                             <option value="year">{t('year')}</option>
@@ -279,7 +283,7 @@ export const Analysis: React.FC<{ transactions: Transaction[], currency: Currenc
                             placeholder={t('auto')}
                             value={filters.yAxisInterval}
                             onChange={handleFilterChange}
-                            className="w-full bg-primary p-2 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+                            className="w-full bg-[#0f172a]/50 backdrop-blur-md p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:border-accent/50 focus:outline-none focus:ring-2 focus:ring-accent/50 transition-all duration-200"
                         />
                     </div>
                 </div>
@@ -295,11 +299,11 @@ export const Analysis: React.FC<{ transactions: Transaction[], currency: Currenc
                 </div>
             </div>
 
-            <div className="mt-6 bg-secondary shadow-lg rounded-lg border border-gray-800 overflow-hidden">
+            <div className="mt-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 overflow-hidden">
                 <h3 className="text-xl font-semibold p-6 text-light">{t('filtered_transactions')} ({filteredTransactions.length})</h3>
                 <div className="overflow-x-auto">
                     <table className="min-w-full">
-                        <thead className="bg-primary">
+                        <thead className="bg-[#0f172a]/80 backdrop-blur-sm text-medium/80 border-b border-gray-700/50">
                             <tr>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('date')}</th>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-medium uppercase tracking-wider">{t('description')}</th>
@@ -309,7 +313,7 @@ export const Analysis: React.FC<{ transactions: Transaction[], currency: Currenc
                         </thead>
                         <tbody className="divide-y divide-gray-800">
                             {filteredTransactions.map((t) => (
-                                <tr key={t.id} className="hover:bg-primary">
+                                <tr key={t.id} className="hover:bg-white/5 transition-all duration-200">
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{formatDate(t.date)}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-light">{t.description}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-medium">{t.category}</td>
