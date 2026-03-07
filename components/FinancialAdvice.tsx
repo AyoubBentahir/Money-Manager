@@ -79,12 +79,12 @@ export const FinancialAdvice: React.FC<{ transactions: Transaction[] }> = ({ tra
     }, [chat, currentInput, t]);
 
     return (
-        <div className="p-6 bg-primary min-h-full flex flex-col h-full">
+        <div className="p-6 bg-transparent min-h-full flex flex-col h-full">
             <h1 className="text-4xl font-bold mb-4 text-light shrink-0">{t('financial_advice_title')}</h1>
             <p className="mb-6 text-medium shrink-0">
                 {t('financial_advice_prompt')}
             </p>
-            <div className="bg-secondary shadow-lg rounded-lg border border-gray-800 flex-1 flex flex-col min-h-0">
+            <div className="bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 flex-1 flex flex-col min-h-0">
                 <div ref={chatContainerRef} className="flex-1 p-6 space-y-4 overflow-y-auto">
                     {messages.length === 0 && !isLoading && (
                         <ChatBubble message={{ role: 'model', parts: [{ text: t('chat_welcome') }] }} />
@@ -94,7 +94,7 @@ export const FinancialAdvice: React.FC<{ transactions: Transaction[] }> = ({ tra
                     ))}
                     {isLoading && (
                         <div className="flex justify-start">
-                            <div className="max-w-xl lg:max-w-2xl px-4 py-3 rounded-2xl bg-primary border border-gray-700 flex items-center">
+                            <div className="max-w-xl lg:max-w-2xl px-4 py-3 rounded-2xl bg-[#0f172a]/50 backdrop-blur-sm border border-gray-700/50 shadow-glass flex items-center">
                                 <LoadingSpinner className="h-5 w-5 mr-3" />
                                 <span>{t('fin_is_typing')}</span>
                             </div>
@@ -103,7 +103,7 @@ export const FinancialAdvice: React.FC<{ transactions: Transaction[] }> = ({ tra
                     {error && <div className="text-red-400 bg-red-900 bg-opacity-30 p-4 rounded-lg border border-red-500">{error}</div>}
                 </div>
                 <div className="p-4 border-t border-gray-700">
-                    <div className="flex items-center bg-primary rounded-lg border border-gray-600 focus-within:ring-2 focus-within:ring-accent">
+                    <div className="flex items-center bg-[#0f172a]/50 backdrop-blur-sm rounded-xl border border-gray-700/50 focus-within:ring-2 focus-within:ring-accent/50 shadow-glass">
                         <input
                             type="text"
                             value={currentInput}

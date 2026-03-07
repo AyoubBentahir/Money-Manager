@@ -22,8 +22,13 @@ const BudgetManager: React.FC<{
         .filter(tx => tx.type === 'expense' && tx.budgetId === activeBudget.id)
         .reduce((sum, tx) => sum + tx.amount, 0);
 
-    const remaining = activeBudget.totalAmount - totalSpent;
-    const percentage = activeBudget.totalAmount > 0 ? Math.min((totalSpent / activeBudget.totalAmount) * 100, 100) : 0;
+    const totalIncome = transactions
+        .filter(tx => tx.type === 'income' && tx.budgetId === activeBudget.id)
+        .reduce((sum, tx) => sum + tx.amount, 0);
+
+    const effectiveTotalAmount = activeBudget.totalAmount + totalIncome;
+    const remaining = effectiveTotalAmount - totalSpent;
+    const percentage = effectiveTotalAmount > 0 ? Math.min((totalSpent / effectiveTotalAmount) * 100, 100) : 0;
 
     const handleLimitChange = (category: ExpenseCategoryType, value: string) => {
         const newLimits = { ...limits, [category]: value === '' ? undefined : parseFloat(value) };
@@ -36,12 +41,19 @@ const BudgetManager: React.FC<{
             <h3 className="text-2xl font-semibold text-light mb-4">{t('set_spending_limits')} <span className="text-accent">{activeBudget.name}</span></h3>
 
             {/* Total Budget Balance */}
-            <div className="bg-primary p-5 rounded-lg border border-gray-700 mb-6">
+            <div className="bg-[#0f172a]/50 backdrop-blur-sm p-6 shadow-glass rounded-2xl border-gray-800/50 rounded-lg border border-gray-700 mb-6">
                 <div className="flex justify-between items-center mb-2">
                     <span className="text-medium text-sm font-semibold uppercase tracking-wider">{t('total_budget')}</span>
-                    <span className="font-mono font-bold text-light text-lg">{formatCurrency(activeBudget.totalAmount, currency)}</span>
+                    <div className="text-right">
+                        <span className="font-mono font-bold text-light text-lg">{formatCurrency(effectiveTotalAmount, currency)}</span>
+                        {totalIncome > 0 && (
+                            <div className="text-xs text-green-400 mt-1">
+                                +{formatCurrency(totalIncome, currency)} {t('income')}
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <div className="w-full bg-secondary rounded-full h-3 border border-gray-800 mb-2">
+                <div className="w-full bg-[#0f172a]/50 rounded-full h-3 shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)] mb-2">
                     <div
                         className={`h-3 rounded-full transition-all duration-500 ${percentage >= 100 ? 'bg-red-500' : percentage >= 90 ? 'bg-yellow-500' : 'bg-accent'}`}
                         style={{ width: `${percentage}%` }}
@@ -60,7 +72,7 @@ const BudgetManager: React.FC<{
             {/* Per-category limits */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {ExpenseCategory.map(category => (
-                    <div key={category} className="bg-primary p-4 rounded-lg border border-gray-700">
+                    <div key={category} className="bg-[#0f172a]/50 backdrop-blur-sm p-5 shadow-glass rounded-2xl border border-gray-800/50 hover:bg-[#0f172a]/80 transition-all duration-300">
                         <label htmlFor={`limit-${category}`} className="block text-medium text-sm font-bold mb-2">{category}</label>
                         <input
                             id={`limit-${category}`}
@@ -131,7 +143,7 @@ export const Budgets: React.FC<{
     }
 
     return (
-        <div className="p-6 bg-primary min-h-full">
+        <div className="p-6 bg-transparent min-h-full">
             <h1 className="text-4xl font-bold mb-8 text-light">{t('budget_management')}</h1>
 
             <div className="bg-secondary p-6 rounded-lg border border-gray-800">
@@ -144,7 +156,7 @@ export const Budgets: React.FC<{
                                 <select
                                     value={activeBudgetId || ''}
                                     onChange={e => setActiveBudgetId(e.target.value)}
-                                    className="w-full bg-primary p-3 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent mb-4"
+                                    className="w-full bg-[#0f172a]/50 backdrop-blur-sm p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:outline-none focus:ring-2 focus:ring-accent mb-4"
                                 >
                                     {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                                 </select>
@@ -167,7 +179,7 @@ export const Budgets: React.FC<{
                                 value={newBudgetName}
                                 onChange={e => setNewBudgetName(e.target.value)}
                                 placeholder={t('eg_vacation_fund')}
-                                className="bg-primary p-3 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+                                className="bg-[#0f172a]/50 backdrop-blur-sm p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:outline-none focus:ring-2 focus:ring-accent"
                             />
                             <div className="flex gap-2">
                                 <input
@@ -182,7 +194,7 @@ export const Budgets: React.FC<{
                                         }
                                     }}
                                     placeholder={t('initial_budget_amount')}
-                                    className="flex-grow bg-primary p-3 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent font-mono"
+                                    className="flex-grow bg-[#0f172a]/50 backdrop-blur-sm p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:outline-none focus:ring-2 focus:ring-accent font-mono"
                                 />
                                 <button
                                     onClick={handleAddBudget}
@@ -202,7 +214,7 @@ export const Budgets: React.FC<{
                                 type="text"
                                 value={editingName}
                                 onChange={e => setEditingName(e.target.value)}
-                                className="flex-grow bg-primary p-3 rounded-md border border-gray-700 focus:outline-none focus:ring-2 focus:ring-accent"
+                                className="flex-grow bg-[#0f172a]/50 backdrop-blur-sm p-3 rounded-xl border border-gray-700/50 focus:bg-[#0f172a]/80 focus:outline-none focus:ring-2 focus:ring-accent"
                             />
                             <button onClick={handleRenameBudget} className="bg-accent hover:bg-accent-hover text-primary font-bold py-2 px-6 rounded-md">{t('save_name')}</button>
                         </div>

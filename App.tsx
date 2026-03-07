@@ -143,7 +143,7 @@ const AppInner: React.FC = () => {
       case View.Transactions:
         return <Transactions transactions={transactions} addTransaction={addTransaction} deleteTransaction={deleteTransaction} currency={currency} budgets={budgets} activeBudgetId={activeBudgetId} externalModalOpen={isTransactionModalOpen} onExternalModalClose={() => setIsTransactionModalOpen(false)} />;
       case View.Analysis:
-        return <Analysis transactions={transactions} currency={currency} budgets={budgets} />;
+        return <Analysis transactions={transactions} recurringTransactions={recurringTransactions} currency={currency} budgets={budgets} />;
       case View.Budgets:
         return <Budgets budgets={budgets} transactions={transactions} activeBudgetId={activeBudgetId} setActiveBudgetId={setActiveBudgetId} addBudget={addBudget} deleteBudget={deleteBudget} updateBudget={updateBudget} currency={currency} />;
       case View.FinancialAdvice:
@@ -159,25 +159,32 @@ const AppInner: React.FC = () => {
 
   return (
     <TranslationContext.Provider value={{ language, setLanguage: handleLanguageChange, t }}>
-      <div className="flex h-screen bg-primary font-sans text-light">
-        {isDataLoading && (
-          <div className="fixed inset-0 bg-primary bg-opacity-70 flex flex-col justify-center items-center z-50">
-            <LoadingSpinner />
-            <p className="mt-4 text-lg">{t('processing_data')}</p>
-          </div>
-        )}
-        <Sidebar
-          currentView={currentView}
-          onViewChange={setCurrentView}
-          onImport={handleImport}
-          onExport={handleExport}
-          currency={currency}
-          setCurrency={setCurrency}
-        />
-        <main className="flex-1 overflow-y-auto">
-          {renderContent()}
-        </main>
-        <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".xlsx, .xls" />
+      <div className="flex h-screen bg-gradient-to-br from-[#0B1120] via-[#0f172a] to-[#020617] font-sans text-light relative overflow-hidden">
+        {/* Animated Glow Orbs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-accent/20 rounded-full mix-blend-screen filter blur-[100px] opacity-50 animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple/20 rounded-full mix-blend-screen filter blur-[100px] opacity-50 animate-pulse" style={{ animationDelay: '2s' }}></div>
+
+        {/* Main Content Wrapper */}
+        <div className="flex w-full h-full relative z-10">
+          {isDataLoading && (
+            <div className="fixed inset-0 bg-primary bg-opacity-70 flex flex-col justify-center items-center z-50">
+              <LoadingSpinner />
+              <p className="mt-4 text-lg">{t('processing_data')}</p>
+            </div>
+          )}
+          <Sidebar
+            currentView={currentView}
+            onViewChange={setCurrentView}
+            onImport={handleImport}
+            onExport={handleExport}
+            currency={currency}
+            setCurrency={setCurrency}
+          />
+          <main className="flex-1 overflow-y-auto">
+            {renderContent()}
+          </main>
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".xlsx, .xls" />
+        </div>
       </div>
     </TranslationContext.Provider>
   );

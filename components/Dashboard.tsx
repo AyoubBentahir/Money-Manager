@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { AlertIcon } from './icons';
 import CategoryChart from './CategoryChart';
+import HeatmapCalendar from './HeatmapCalendar';
+import Achievements from './Achievements';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { Transaction, Budget, Currency, BudgetAlert } from '../types';
 import { useTranslations } from '../contexts/TranslationContext';
@@ -9,7 +11,7 @@ const RecentTransactions: React.FC<{ transactions: Transaction[], currency: Curr
     const { t } = useTranslations();
     const recent = transactions.slice(0, 5);
     return (
-        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+        <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
             <h3 className="text-xl font-semibold mb-4 text-light">{t('recent_transactions')}</h3>
             {recent.length === 0 ? (
                 <p className="text-medium">{t('no_transactions_yet')}</p>
@@ -42,7 +44,7 @@ const ActiveBudgetSummary: React.FC<{
     const { t } = useTranslations();
     if (!activeBudget) {
         return (
-            <div className="p-6 bg-secondary rounded-lg border border-gray-800 text-center">
+            <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50 text-center">
                 <h4 className="text-xl font-semibold mb-2 text-light">{t('no_active_budget')}</h4>
                 <p className="text-medium">{t('no_active_budget_prompt')}</p>
             </div>
@@ -58,7 +60,7 @@ const ActiveBudgetSummary: React.FC<{
     const remaining = totalBudgetLimit - totalSpent;
 
     return (
-        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+        <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-semibold text-light">{t('active_budget')}:</h3>
                 <select
@@ -70,7 +72,7 @@ const ActiveBudgetSummary: React.FC<{
                     {budgets.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
             </div>
-            <div className="w-full bg-primary rounded-full h-4 border border-gray-800">
+            <div className="w-full bg-[#0f172a]/50 rounded-full h-4 shadow-[inset_0_2px_4px_rgba(0,0,0,0.6)]">
                 <div
                     className="bg-accent h-4 rounded-full transition-all duration-500"
                     style={{ width: `${percentage}%` }}
@@ -133,7 +135,7 @@ const MonthlySummary: React.FC<{ transactions: Transaction[], currency: Currency
     const monthName = now.toLocaleString('default', { month: 'long', year: 'numeric' });
 
     return (
-        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+        <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
             <h3 className="text-xl font-semibold text-light mb-4">Monthly Summary <span className="text-accent text-base font-normal">({monthName})</span></h3>
             <div className="space-y-3">
                 <div>
@@ -141,7 +143,7 @@ const MonthlySummary: React.FC<{ transactions: Transaction[], currency: Currency
                         <span className="text-medium">Income</span>
                         <span className="font-mono text-green-400">{formatCurrency(income, currency)}</span>
                     </div>
-                    <div className="w-full bg-primary rounded-full h-2.5">
+                    <div className="w-full bg-[#0f172a]/50 rounded-full h-2.5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)]">
                         <div className="bg-green-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${(income / max) * 100}%` }} />
                     </div>
                 </div>
@@ -150,7 +152,7 @@ const MonthlySummary: React.FC<{ transactions: Transaction[], currency: Currency
                         <span className="text-medium">Expenses</span>
                         <span className="font-mono text-red-400">{formatCurrency(expenses, currency)}</span>
                     </div>
-                    <div className="w-full bg-primary rounded-full h-2.5">
+                    <div className="w-full bg-[#0f172a]/50 rounded-full h-2.5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)]">
                         <div className="bg-red-500 h-2.5 rounded-full transition-all duration-500" style={{ width: `${(expenses / max) * 100}%` }} />
                     </div>
                 </div>
@@ -177,7 +179,7 @@ const SpendingDonut: React.FC<{ transactions: Transaction[], currency: Currency 
     }, [expenses]);
 
     if (total === 0) return (
-        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+        <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
             <h3 className="text-xl font-semibold text-light mb-4">Spending Breakdown</h3>
             <p className="text-medium text-center py-4">No expense data available.</p>
         </div>
@@ -197,7 +199,7 @@ const SpendingDonut: React.FC<{ transactions: Transaction[], currency: Currency 
     });
 
     return (
-        <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+        <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
             <h3 className="text-xl font-semibold text-light mb-4">Spending Breakdown</h3>
             <div className="flex items-center gap-6">
                 <svg width="160" height="160" viewBox="0 0 160 160" className="flex-shrink-0">
@@ -269,26 +271,28 @@ export const Dashboard: React.FC<{
     }, [transactions, activeBudget]);
 
     return (
-        <div className="p-6 bg-primary min-h-full">
+        <div className="p-6 bg-transparent min-h-full">
             <h1 className="text-4xl font-bold mb-8 text-light">{t('dashboard')}</h1>
 
             <BudgetAlerts alerts={budgetAlerts} currency={currency} />
 
             {/* Top summary cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+                <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
                     <h4 className="text-sm font-medium text-medium uppercase tracking-wider">{t('total_balance')}</h4>
                     <p className="text-3xl font-bold mt-1 font-mono">{formatCurrency(balance, currency)}</p>
                 </div>
-                <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+                <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
                     <h4 className="text-sm font-medium text-medium uppercase tracking-wider">{t('total_income')}</h4>
                     <p className="text-3xl font-bold mt-1 text-green-400 font-mono">{formatCurrency(totalIncome, currency)}</p>
                 </div>
-                <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+                <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
                     <h4 className="text-sm font-medium text-medium uppercase tracking-wider">{t('total_expenses')}</h4>
                     <p className="text-3xl font-bold mt-1 text-red-400 font-mono">{formatCurrency(totalExpenses, currency)}</p>
                 </div>
             </div>
+
+            <Achievements transactions={transactions} budgets={budgets} />
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <div className="lg:col-span-2">
@@ -302,6 +306,7 @@ export const Dashboard: React.FC<{
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-6">
                     <ActiveBudgetSummary transactions={transactions} activeBudget={activeBudget} currency={currency} budgets={budgets} setActiveBudgetId={setActiveBudgetId} />
+                    <HeatmapCalendar transactions={transactions} currency={currency} />
                     <RecentTransactions transactions={transactions} currency={currency} />
                 </div>
                 <div className="lg:col-span-1 space-y-6">
