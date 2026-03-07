@@ -1,74 +1,151 @@
 <!DOCTYPE html>
 <html lang="en" id="html-tag">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MoneyTracker AI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'primary': '#0D1117',
-              'secondary': '#161B22',
-              'accent': {
-                'DEFAULT': '#38BDF8',
-                'hover': '#7DD3FC',
-              },
-              'glow': 'rgba(56, 189, 248, 0.5)',
-              'light': '#E6EDF3',
-              'medium': '#8B949E',
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoneyTracker AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'primary': '#0B1120',
+            'secondary': '#111827',
+            'accent': {
+              'DEFAULT': '#06B6D4',
+              'hover': '#22D3EE',
             },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              mono: ['Roboto Mono', 'monospace'],
+            'glow': 'rgba(6, 182, 212, 0.5)',
+            'light': '#F8FAFC',
+            'medium': '#94A3B8',
+            'purple': '#8B5CF6',
+          },
+          fontFamily: {
+            sans: ['Outfit', 'Inter', 'sans-serif'],
+            mono: ['Roboto Mono', 'monospace'],
+          },
+          boxShadow: {
+            'glow': '0 0 20px 0 rgba(6, 182, 212, 0.6)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05)'
+          },
+          keyframes: {
+            'fade-in': {
+              '0%': { opacity: '0', transform: 'translateY(10px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
             },
-            boxShadow: {
-              'glow': '0 0 15px 0 rgba(56, 189, 248, 0.4)',
-            },
-            keyframes: {
-              'fade-in': {
-                '0%': { opacity: '0', transform: 'translateY(10px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' },
-              }
-            },
-            animation: {
-              'fade-in': 'fade-in 0.25s ease-out',
+            'shine': {
+              '100%': { transform: 'translateX(200%)' }
             }
           },
+          animation: {
+            'fade-in': 'fade-in 0.25s ease-out',
+            'shine': 'shine 1.5s ease-out infinite'
+          }
         },
-      };
-    </script>
-    <style>
-      /* Light theme overrides */
-      [data-theme='light'] {
-        --color-primary: #F3F4F6;
-        --color-secondary: #FFFFFF;
-        --color-light: #111827;
-        --color-medium: #6B7280;
-      }
-      [data-theme='light'] .bg-primary { background-color: #F3F4F6 !important; }
-      [data-theme='light'] .bg-secondary { background-color: #FFFFFF !important; }
-      [data-theme='light'] .text-light { color: #111827 !important; }
-      [data-theme='light'] .text-medium { color: #6B7280 !important; }
-      [data-theme='light'] .border-gray-800 { border-color: #E5E7EB !important; }
-      [data-theme='light'] .border-gray-700 { border-color: #D1D5DB !important; }
-      [data-theme='light'] .border-gray-600 { border-color: #D1D5DB !important; }
-      [data-theme='light'] .divide-gray-800 > * + * { border-color: #E5E7EB !important; }
-      [data-theme='light'] .hover\:bg-gray-800:hover { background-color: #F3F4F6 !important; }
-      [data-theme='light'] .hover\:bg-primary:hover { background-color: #F3F4F6 !important; }
-      [data-theme='light'] .bg-primary.bg-opacity-70 { background-color: rgba(243,244,246,0.85) !important; }
-      [data-theme='light'] input, [data-theme='light'] select, [data-theme='light'] textarea {
-        color: #111827;
-      }
-    </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
-  </head>
-  <body class="bg-primary text-light" id="body-tag">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+      },
+    };
+  </script>
+  <style>
+    /* Light theme overrides */
+    [data-theme='light'] {
+      --color-primary: #F8FAFC;
+      --color-secondary: #FFFFFF;
+      --color-light: #0F172A;
+      --color-medium: #64748B;
+    }
+
+    [data-theme='light'] .bg-primary {
+      background-color: #F8FAFC !important;
+    }
+
+    [data-theme='light'] .bg-secondary {
+      background-color: #FFFFFF !important;
+    }
+
+    [data-theme='light'] .text-light {
+      color: #0F172A !important;
+    }
+
+    [data-theme='light'] .text-medium {
+      color: #64748B !important;
+    }
+
+    [data-theme='light'] .border-gray-800,
+    [data-theme='light'] .border-gray-800\/50,
+    [data-theme='light'] .border-gray-800\/60 {
+      border-color: #E2E8F0 !important;
+    }
+
+    [data-theme='light'] .border-gray-700,
+    [data-theme='light'] .border-gray-700\/50 {
+      border-color: #CBD5E1 !important;
+    }
+
+    [data-theme='light'] .border-gray-600 {
+      border-color: #94A3B8 !important;
+    }
+
+    [data-theme='light'] .divide-gray-800>*+* {
+      border-color: #E2E8F0 !important;
+    }
+
+    [data-theme='light'] .hover\:bg-gray-800:hover {
+      background-color: #F1F5F9 !important;
+    }
+
+    [data-theme='light'] .hover\:bg-primary:hover {
+      background-color: #F8FAFC !important;
+    }
+
+    [data-theme='light'] .bg-primary\.bg-opacity-70 {
+      background-color: rgba(248, 250, 252, 0.85) !important;
+    }
+
+    [data-theme='light'] .bg-\[\#0f172a\]\/50,
+    [data-theme='light'] .bg-\[\#060b19\]\/60,
+    [data-theme='light'] .bg-\[\#060b19\]\/80,
+    [data-theme='light'] .bg-secondary\/40,
+    [data-theme='light'] .bg-secondary\/60,
+    [data-theme='light'] .bg-secondary\/80 {
+      background-color: rgba(255, 255, 255, 0.7) !important;
+      backdrop-filter: blur(12px) !important;
+    }
+
+    [data-theme='light'] .from-primary,
+    [data-theme='light'] .via-\[\#0f172a\],
+    [data-theme='light'] .to-\[\#020617\] {
+      --tw-gradient-from: #F8FAFC !important;
+      --tw-gradient-to: #E2E8F0 !important;
+      --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+    }
+
+    [data-theme='light'] .shadow-glass {
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07) !important;
+    }
+
+    [data-theme='light'] .text-accent {
+      color: #0284C7 !important;
+    }
+
+    [data-theme='light'] input,
+    [data-theme='light'] select,
+    [data-theme='light'] textarea {
+      color: #0F172A;
+      background-color: rgba(255, 255, 255, 0.9) !important;
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+</head>
+
+<body class="bg-primary text-light" id="body-tag">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
 </html>

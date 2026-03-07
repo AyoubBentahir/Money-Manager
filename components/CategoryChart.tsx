@@ -5,12 +5,12 @@ import { useTranslations } from '../contexts/TranslationContext';
 
 const COLORS = ['#38BDF8', '#34D399', '#FBBF24', '#F87171', '#60A5FA', '#A78BFA', '#F472B6'];
 const getCategoryColor = (category: string) => {
-    let hash = 0;
-    for (let i = 0; i < category.length; i++) {
-        hash = category.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const index = Math.abs(hash % COLORS.length);
-    return COLORS[index];
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = category.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash % COLORS.length);
+  return COLORS[index];
 }
 
 export const CategoryChart: React.FC<{ transactions: Transaction[], currency: Currency }> = ({ transactions, currency }) => {
@@ -30,7 +30,7 @@ export const CategoryChart: React.FC<{ transactions: Transaction[], currency: Cu
   const maxExpense = sortedCategories.length > 0 ? sortedCategories[0][1] : 1;
 
   return (
-    <div className="p-6 bg-secondary rounded-lg border border-gray-800">
+    <div className="p-6 bg-secondary/80 backdrop-blur-md shadow-glass rounded-xl border border-gray-800/50 transition-all duration-300 hover:shadow-glow hover:border-gray-700/50">
       <h3 className="text-xl font-semibold mb-4 text-light">{t('top_5_spending_categories')}</h3>
       {sortedCategories.length === 0 ? (
         <p className="text-medium">{t('no_expense_data')}</p>
@@ -42,7 +42,7 @@ export const CategoryChart: React.FC<{ transactions: Transaction[], currency: Cu
                 <span className="font-medium text-light">{category}</span>
                 <span className="font-mono text-medium">{formatCurrency(amount, currency)}</span>
               </div>
-              <div className="w-full bg-primary rounded-full h-2.5 border border-gray-700">
+              <div className="w-full bg-[#0f172a]/50 rounded-full h-2.5 shadow-[inset_0_1px_3px_rgba(0,0,0,0.6)]">
                 <div
                   className="h-2.5 rounded-full"
                   style={{

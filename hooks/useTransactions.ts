@@ -20,14 +20,14 @@ const sanitizeState = (data: any) => {
     }
 
     const sanitizedTransactions = (Array.isArray(data.transactions) ? data.transactions : [])
-        .filter(t => t && typeof t === 'object' && typeof t.amount === 'number' && typeof t.date === 'string' && t.type && t.category);
+        .filter((t: any) => t && typeof t === 'object' && typeof t.amount === 'number' && typeof t.date === 'string' && t.type && t.category);
 
     const sanitizedBudgets = (Array.isArray(data.budgets) ? data.budgets : [])
         .filter((b: any) => b && typeof b === 'object' && typeof b.name === 'string' && typeof b.limits === 'object')
         .map((b: any) => ({ ...b, totalAmount: typeof b.totalAmount === 'number' ? b.totalAmount : 0 }));
 
     const sanitizedRecurring = (Array.isArray(data.recurringTransactions) ? data.recurringTransactions : [])
-        .filter(rt =>
+        .filter((rt: any) =>
             rt && typeof rt === 'object' &&
             typeof rt.amount === 'number' &&
             typeof rt.nextDueDate === 'string' &&
@@ -37,7 +37,7 @@ const sanitizeState = (data: any) => {
         );
 
     const sanitizedGoals = (Array.isArray(data.goals) ? data.goals : [])
-        .filter(g => g && typeof g === 'object' && typeof g.name === 'string' && typeof g.targetAmount === 'number' && typeof g.currentAmount === 'number');
+        .filter((g: any) => g && typeof g === 'object' && typeof g.name === 'string' && typeof g.targetAmount === 'number' && typeof g.currentAmount === 'number');
 
     return {
         transactions: sanitizedTransactions,

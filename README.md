@@ -15,12 +15,12 @@
 
 ## ✨ Features
 
-- **📊 Dashboard** — Overview of balance, income, expenses, recent transactions, and budget status with alerts when you're close to your limit.
-- **💸 Transactions** — Add, view, and delete income/expense entries with categories, dates, and budget tags.
+- **📊 Dashboard** — Overview of balance, income, expenses, recent transactions, and budget status, plus a new **Activity Heatmap** and premium gamified **Achievements**.
+- **💸 Transactions** — Add, view, and delete income/expense entries. You can now **assign Income directly to Budgets**.
 - **🔁 Recurring Transactions** — Set up daily/weekly/monthly/yearly recurring entries that auto-execute on app load.
-- **📈 Analysis** — Interactive line charts with date/type/budget filters to visualize your financial trends.
-- **🎯 Budgets** — Create budgets with a real **initial total amount**, set per-category spending limits, and track your remaining balance as transactions are added.
-- **🏆 Financial Goals** — Set savings goals with target amounts and dates, then track progress with a visual bar.
+- **📈 Analysis** — Interactive line charts with date/type/budget filters, plus a **30-day Predictive Cash Flow** forecast based on your habits.
+- **🎯 Budgets** — Create budgets with an **initial total amount** and categorical limits. Any **assigned Income** automatically increases your effective budget limit.
+- **🏆 Financial Goals** — Set savings goals with target amounts/dates, tracked by visual bars and **animated confetti celebrations** at key milestones.
 - **🤖 AI Financial Advisor ("Fin")** — Chat with an AI assistant powered by Google Gemini, context-aware of your transaction history. Supports streaming responses.
 - **📤 Export / Import** — Back up and restore your entire financial data as an `.xlsx` file.
 - **🌍 Multi-language** — English, French, Spanish, and Arabic.
@@ -35,7 +35,14 @@
 - [Node.js](https://nodejs.org/) (v18 or higher)
 - A free **Google Gemini API key** (see below)
 
-### 1. Clone the repository
+### Option 1: Quick Download (Recommended for non-technical users)
+If you don't want to deal with code, you can download the ready-to-use version:
+1. Go to the [Releases](https://github.com/AyoubBentahir/Money-Manager/releases) page.
+2. Under "Assets" in the latest release, download the `MoneyTrackerAI-vX.X.X.zip` file.
+3. Extract the `.zip` file on your computer.
+4. Open the extracted folder and double-click the `index.html` file to launch the app instantly in your browser!
+
+### Option 2: Clone the repository (For Developers)
 ```bash
 git clone https://github.com/AyoubBentahir/Money-Manager
 cd Money-Manager
